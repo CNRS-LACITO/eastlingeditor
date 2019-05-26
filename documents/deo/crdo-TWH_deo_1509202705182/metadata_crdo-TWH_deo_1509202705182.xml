@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?><crdo:catalog xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns="http://crdo.risc.cnrs.fr/schemas/" xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:olac="http://www.language-archives.org/OLAC/1.1/" xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dcterms="http://purl.org/dc/terms/"><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2017-10-28" crdo:id="crdo-TWH_deo_1509202705182"><dc:title  xml:lang="fra">Quel jour est-il bon ou mauvais pour se coiffer ?</dc:title><dc:language xsi:type="olac:language" olac:code="twh"></dc:language><dc:subject  xsi:type="olac:language" olac:code="twh">Tai Dón</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=103.35;north=22.53;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Mường So, Lai Châu, Vietnam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Deo, Matthew</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Deo, Matthew</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Moonlight</dc:contributor><dc:publisher>Moonlight</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format  xsi:type="dcterms:IMT">text/xml</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Text</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2017-10-28</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182.xml</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182.xhtml</dcterms:isFormatOf><dcterms:requires xsi:type="dcterms:URI">image</dcterms:requires><dcterms:requires xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182_audio</dcterms:requires></crdo:item><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2017-10-28" crdo:id="image"><dc:title  xml:lang="fra">Quel jour est-il bon ou mauvais pour se coiffer ?</dc:title><dc:language xsi:type="olac:language" olac:code="twh"></dc:language><dc:subject  xsi:type="olac:language" olac:code="twh">Tai Dón</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=103.35;north=22.53;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Mường So, Lai Châu, Vietnam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Deo, Matthew</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Deo, Matthew</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Moonlight</dc:contributor><dc:publisher>Moonlight</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format xsi:type="dcterms:IMT">image/jpeg</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Image</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2017-10-28</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dcterms:isRequiredBy xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182</dcterms:isRequiredBy>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182_image_1509202770.jpg</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182_image_1509202770.jpg</dcterms:isFormatOf></crdo:item><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2017-10-28" crdo:id="crdo-TWH_deo_1509202705182_audio"><dc:title  xml:lang="fra">Quel jour est-il bon ou mauvais pour se coiffer ?</dc:title><dc:language xsi:type="olac:language" olac:code="twh"></dc:language><dc:subject  xsi:type="olac:language" olac:code="twh">Tai Dón</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=103.35;north=22.53;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Mường So, Lai Châu, Vietnam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Deo, Matthew</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Deo, Matthew</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer"></dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Moonlight</dc:contributor><dc:publisher>Moonlight</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format xsi:type="dcterms:IMT">audio/mpeg</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Sound</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2017-10-28</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dcterms:isRequiredBy xsi:type="dcterms:URI">crdo-TWH_deo_1509202705182</dcterms:isRequiredBy>
+                    <dc:identifier xsi:type="dcterms:URI"></dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI"></dcterms:isFormatOf></crdo:item></crdo:catalog>
