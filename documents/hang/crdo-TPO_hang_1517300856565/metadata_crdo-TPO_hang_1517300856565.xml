@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?><crdo:catalog xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns="http://crdo.risc.cnrs.fr/schemas/" xmlns:oai="http://www.openarchives.org/OAI/2.0/" xmlns:olac="http://www.language-archives.org/OLAC/1.1/" xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dcterms="http://purl.org/dc/terms/"><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2018-02-07" crdo:id="crdo-TPO_hang_1517300856565"><dc:title  xml:lang="fra">Lai Pao 2</dc:title><dcterms:alternative xml:lang="eng">Lai Pao 2</dcterms:alternative><dcterms:alternative xml:lang="vie">Lai Pao 2</dcterms:alternative><dc:language xsi:type="olac:language" olac:code="vie"></dc:language><dc:subject  xsi:type="olac:language" olac:code="tpo">Tai Pao</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=104.48;north=19.26;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Hoà Bình, Tương Dương, Nghệ An, Việt Nam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker">Lô, Văn Mai Liễu</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Centre national de la recherche scientifique</dc:contributor><dc:publisher>Laboratoire de langues et civilisations à tradition orale</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format  xsi:type="dcterms:IMT">text/xml</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Text</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2018-02-07</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565.xml</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565.xhtml</dcterms:isFormatOf><dcterms:requires xsi:type="dcterms:URI">Lai Pao 2 - page 1</dcterms:requires><dcterms:requires xsi:type="dcterms:URI">Lai Pao 2 - page 2</dcterms:requires><dcterms:requires xsi:type="dcterms:URI">Lai Pao 2 - page 3</dcterms:requires><dcterms:requires xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_audio</dcterms:requires></crdo:item><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2018-02-07" crdo:id="Lai Pao 2 - page 1"><dc:title  xml:lang="fra">Lai Pao 2</dc:title><dcterms:alternative xml:lang="eng">Lai Pao 2</dcterms:alternative><dcterms:alternative xml:lang="vie">Lai Pao 2</dcterms:alternative><dc:language xsi:type="olac:language" olac:code="vie"></dc:language><dc:subject  xsi:type="olac:language" olac:code="tpo">Tai Pao</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=104.48;north=19.26;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Hoà Bình, Tương Dương, Nghệ An, Việt Nam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker">Lô, Văn Mai Liễu</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Centre national de la recherche scientifique</dc:contributor><dc:publisher>Laboratoire de langues et civilisations à tradition orale</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format xsi:type="dcterms:IMT">image/jpeg</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Image</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2018-02-07</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dcterms:isRequiredBy xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565</dcterms:isRequiredBy>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_image_1517302056.jpg</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_image_1517302056.jpg</dcterms:isFormatOf></crdo:item><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2018-02-07" crdo:id="Lai Pao 2 - page 2"><dc:title  xml:lang="fra">Lai Pao 2</dc:title><dcterms:alternative xml:lang="eng">Lai Pao 2</dcterms:alternative><dcterms:alternative xml:lang="vie">Lai Pao 2</dcterms:alternative><dc:language xsi:type="olac:language" olac:code="vie"></dc:language><dc:subject  xsi:type="olac:language" olac:code="tpo">Tai Pao</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=104.48;north=19.26;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Hoà Bình, Tương Dương, Nghệ An, Việt Nam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker">Lô, Văn Mai Liễu</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Centre national de la recherche scientifique</dc:contributor><dc:publisher>Laboratoire de langues et civilisations à tradition orale</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format xsi:type="dcterms:IMT">image/jpeg</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Image</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2018-02-07</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dcterms:isRequiredBy xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565</dcterms:isRequiredBy>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_image_1517302206.jpg</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_image_1517302206.jpg</dcterms:isFormatOf></crdo:item><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2018-02-07" crdo:id="Lai Pao 2 - page 3"><dc:title  xml:lang="fra">Lai Pao 2</dc:title><dcterms:alternative xml:lang="eng">Lai Pao 2</dcterms:alternative><dcterms:alternative xml:lang="vie">Lai Pao 2</dcterms:alternative><dc:language xsi:type="olac:language" olac:code="vie"></dc:language><dc:subject  xsi:type="olac:language" olac:code="tpo">Tai Pao</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=104.48;north=19.26;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Hoà Bình, Tương Dương, Nghệ An, Việt Nam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker">Lô, Văn Mai Liễu</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Centre national de la recherche scientifique</dc:contributor><dc:publisher>Laboratoire de langues et civilisations à tradition orale</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format xsi:type="dcterms:IMT">image/jpeg</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Image</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2018-02-07</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dcterms:isRequiredBy xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565</dcterms:isRequiredBy>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_image_1517302233.jpg</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_image_1517302233.jpg</dcterms:isFormatOf></crdo:item><crdo:item xmlns:crdo="http://crdo.risc.cnrs.fr/schemas/" crdo:datestamp="2018-02-07" crdo:id="crdo-TPO_hang_1517300856565_audio"><dc:title  xml:lang="fra">Lai Pao 2</dc:title><dcterms:alternative xml:lang="eng">Lai Pao 2</dcterms:alternative><dcterms:alternative xml:lang="vie">Lai Pao 2</dcterms:alternative><dc:language xsi:type="olac:language" olac:code="vie"></dc:language><dc:subject  xsi:type="olac:language" olac:code="tpo">Tai Pao</dc:subject><dcterms:spatial  xsi:type="dcterms:ISO3166">VN</dcterms:spatial>
+                <dcterms:spatial  xsi:type="dcterms:Point">east=104.48;north=19.26;</dcterms:spatial>
+                <dcterms:spatial  xml:lang="en">Hoà Bình, Tương Dương, Nghệ An, Việt Nam</dcterms:spatial><dc:contributor xsi:type="olac:role" olac:code="depositor">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="researcher">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="speaker">Lô, Văn Mai Liễu</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="recorder">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="interviewer">Ferlus, Michel</dc:contributor><dc:contributor xsi:type="olac:role" olac:code="sponsor">Centre national de la recherche scientifique</dc:contributor><dc:publisher>Laboratoire de langues et civilisations à tradition orale</dc:publisher><dcterms:accessRights >Freely available for non-commercial use</dcterms:accessRights>
+			    <dcterms:isPartOf  xsi:type="dcterms:URI">crdo-COLLECTION_LACITO</dcterms:isPartOf>
+			    <collection>Lacito</collection>
+			    <dcterms:available xsi:type="dcterms:W3CDTF"></dcterms:available>
+			    <dcterms:license xsi:type="dcterms:URI">CC-BY-SA</dcterms:license>
+			    <dc:rights>Copyright (c) Ferlus, Michel</dc:rights>
+                <dc:format xsi:type="dcterms:IMT">audio/mpeg</dc:format>
+                    <dc:source></dc:source>
+                    <dc:type xsi:type="dcterms:DCMIType">Sound</dc:type>
+                    <dcterms:created xsi:type="dcterms:W3CDTF">2018-02-07</dcterms:created>
+                    <dcterms:extent></dcterms:extent>
+                    <dcterms:isRequiredBy xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565</dcterms:isRequiredBy>
+                    <dc:identifier xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_sound_1517301863.mp3</dc:identifier>
+                    <dcterms:isFormatOf  xsi:type="dcterms:URI">crdo-TPO_hang_1517300856565_sound_1517301863.mp3</dcterms:isFormatOf></crdo:item></crdo:catalog>
