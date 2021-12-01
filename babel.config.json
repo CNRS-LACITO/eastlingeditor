@@ -1,0 +1,14 @@
+{
+  "presets":[
+        ["@babel/preset-env", {
+        "include": [
+          "@babel/plugin-transform-classes"
+        ]
+      }],
+        "@babel/preset-react"
+    ],
+  "plugins": [
+    "@babel/plugin-transform-classes",
+    "@babel/plugin-syntax-jsx"
+  ]
+}

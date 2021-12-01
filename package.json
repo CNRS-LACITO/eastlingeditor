@@ -1,0 +1,54 @@
+{
+  "name": "eastlingeditor",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://eastling.huma-num.fr/editor",
+  "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/data-grid": "^4.0.0-alpha.33",
+    "@material-ui/icons": "^4.11.2",
+    "@testing-library/jest-dom": "^5.12.0",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "axios": "^0.21.1",
+    "react": "^17.0.2",
+    "react-animated-tree": "^1.0.10",
+    "react-cool-onclickoutside": "^1.6.2",
+    "react-dom": "^17.0.2",
+    "react-geolookup": "^1.1.0",
+    "react-i18next": "^11.10.0",
+    "react-image-crop": "^8.6.12",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "react-sortable-tree": "^2.8.0",
+    "react-translated": "^2.5.0",
+    "react-validation": "^3.0.7",
+    "validator": "^13.6.0",
+    "wavesurfer.js": "^5.1.0",
+    "web-vitals": "^1.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "@babel/plugin-syntax-jsx": "^7.14.5",
+    "@babel/plugin-transform-react-jsx": "^7.14.9",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-react": "^7.14.5",
+    "@types/googlemaps": "^3.43.3"
+  }
+}
