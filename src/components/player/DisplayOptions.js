@@ -28,21 +28,16 @@ class DisplayOptions extends React.Component {
 
 
   buildUrl(){
-
+    //on laisse cette fonction vide, utile dans Pangloss
   }
 
 
   handleTranscriptionOptions(event){
 
-    console.log(event.target.name);
-    console.log(this.props.options);
     if(event.target.name.length >0 ){
       var inputName = event.target.name.split('-');
       var s = [inputName[0]]+"Transcriptions";
       var checkedTranscriptions = this.state[[inputName[0]]+"Transcriptions"];
-      
-      console.log(s);
-
       //transName is used because some kindOf or Translation type can contain "-" character
       var transName = event.target.name.split(inputName[0]+'-');
 
@@ -51,7 +46,6 @@ class DisplayOptions extends React.Component {
       if (index > -1) {
         //if the transcription is disabled
         checkedTranscriptions.splice(index, 1);
-        console.log(checkedTranscriptions);
 
         document.querySelectorAll('.transcription.'+event.target.name).forEach(
           function(e){
@@ -72,7 +66,6 @@ class DisplayOptions extends React.Component {
         [inputName[0]+'Transcriptions']: checkedTranscriptions
       },this.buildUrl());
 
-      console.log(this.props.options);
 
     }
     

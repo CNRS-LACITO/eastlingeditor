@@ -5,6 +5,7 @@ import SaveIcon from '@material-ui/icons/Save';
 import TextField from '@material-ui/core/TextField';
 import FormService from "../services/form.service";
 import TranslationService from "../services/translation.service";
+import NoteService from "../services/note.service";
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import FormControl from '@material-ui/core/FormControl';
@@ -18,7 +19,7 @@ class TextItemCreateForm extends Component {
     super(props);
     this.state = {
       text:"",
-      lang:(this.props.available_lang.length > 0) ? this.props.available_lang[0]:"",
+      lang:(this.props.available_lang != null && this.props.available_lang.length > 0) ? this.props.available_lang[0]:"",
       open: props.open,
       loading:false
     };
@@ -33,7 +34,6 @@ class TextItemCreateForm extends Component {
     this.setState({text:event.target.value});
   }
 
-
   componentDidMount(){
 
   }
@@ -46,7 +46,7 @@ class TextItemCreateForm extends Component {
     });
 
 
-    this.props.type==='form' && FormService.create(this.state.lang,this.state.text,this.props.annotationId).then(
+    this.props.type==='form' && FormService.create(this.state.lang,this.state.text,this.props.parentId).then(
       (response) => {
           this.setState({
             loading:false
@@ -70,7 +70,7 @@ class TextItemCreateForm extends Component {
           alert(resMessage);
         });
 
-    this.props.type==='translation' && TranslationService.create(this.state.lang,this.state.text,this.props.annotationId).then(
+    this.props.type==='translation' && TranslationService.create(this.state.lang,this.state.text,this.props.parentId).then(
       (response) => {
           this.setState({
             loading:false
@@ -80,6 +80,30 @@ class TextItemCreateForm extends Component {
         error => {
           this.setState({
             inputEnabled:true,
+            loading:false
+          });
+
+          if(error.response.status===401) this.props.history.push('/login');
+
+          const resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+
+          alert(resMessage);
+        });
+
+    this.props.type==='note' && NoteService.create(this.state.lang,this.state.text,this.props.parentType,this.props.parentId).then(
+      (response) => {
+          this.setState({
+            loading:false
+          });
+          this.props.refreshNotesParent();
+        },
+        error => {
+          this.setState({
             loading:false
           });
 
@@ -116,7 +140,7 @@ class TextItemCreateForm extends Component {
                   }}
                   onChange={this.onLangChange}
                 >
-                  {this.props.available_lang.map((a) => (
+                  {(this.props.available_lang!=null) && this.props.available_lang.map((a) => (
                     <option value={a}>
                       {a}
                     </option>
@@ -136,7 +160,7 @@ class TextItemCreateForm extends Component {
               />
                 {
                   this.state.loading ? <CircularProgress size="1.5rem" /> :
-                  <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.lang.length >=2 && this.state.text.length >=1)}>
+                  <IconButton color="primary" title="Save" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.lang.length >=2 && this.state.text.length >=1)}>
                       <SaveIcon />
                   </IconButton>
                 }

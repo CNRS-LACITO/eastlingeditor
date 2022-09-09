@@ -19,6 +19,7 @@ class Annotations extends React.Component {
         morphemeTranscriptions: (this.props.displayOptions.morphemeTranscriptions.length > 0) ? this.props.displayOptions.morphemeTranscriptions:[],
         morphemeTranslations: (this.props.displayOptions.morphemeTranslations.length > 0) ? this.props.displayOptions.morphemeTranslations:[],
         displayNotes: this.props.displayOptions.notes,
+        notes: this.props.displayOptions.notes,
         lang:this.props.displayOptions.lang,
         mode:this.props.displayOptions.mode,
         continuousPlay:this.props.displayOptions.continuousPlay,
@@ -47,7 +48,7 @@ class Annotations extends React.Component {
   }
 
   render() {
-    console.log(this.props.annotations);
+
     var annotationItems = [];
     var wholeTranscriptions = [];
     var wholeTranslations = [];
@@ -90,7 +91,7 @@ class Annotations extends React.Component {
     if(sentences !== null && sentences !== undefined){
       sentences.forEach((a) => {
 
-        if(a.AREA !== undefined && a.AREA.image !== undefined){
+        if(a.AREA !== undefined && a.AREA[0] !== undefined && a.AREA[0].image !== undefined){
           this.props.images.forEach((i) =>{
             //var idImage = i.id.split('.version');
 
@@ -153,7 +154,14 @@ class Annotations extends React.Component {
 	    }
         
         annotationItems.push(
-            <Sentence doi={doiSentenceUrl} sID={sID} s={a} imageSrc={imageSrc} displayOptions={this.state.displayOptions} />
+            <Sentence 
+              doi={doiSentenceUrl} 
+              sID={sID} 
+              s={a} 
+              imageSrc={imageSrc} 
+              displayOptions={this.state.displayOptions} 
+              openAnnotation={this.props.openAnnotation}
+            />
           );
 
       });

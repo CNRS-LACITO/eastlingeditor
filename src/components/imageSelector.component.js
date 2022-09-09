@@ -2,7 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-export default function ImageSelector({image,canvas,showAnnotation,showImageCanvas}) {
+//export default function ImageSelector({image,canvas,showAnnotation,showImageCanvas,setImageSelection}) {
+export default function ImageSelector(props) {
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
   //const [crop, setCrop] = useState({ unit: '%', width: 30});
@@ -12,32 +13,31 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
 
   const onLoad = useCallback((img) => {
     imgRef.current = img;
-    img.id = image.id;
-    img.usemap = "#mapAreaImage"+image.id;
+    img.id = props.image.id;
+    img.usemap = "#mapAreaImage"+props.image.id;
   }, []);
 
-
   const handleChange = () => (c)=>{
-    c.activeImage=image.id;
+    c.activeImage=props.image.id;
     setCrop(c);
     window.crop=c;
   }
 
   const handleComplete = () => (c) => {
-    c.activeImage=image.id;
+    c.activeImage=props.image.id;
     setCompletedCrop(c);
     window.crop=c;
     var imageSelectionData = {
-      image_id:image.id,
+      image_id:props.image.id,
       x:parseFloat(c.x.toFixed(2)),
       y:parseFloat(c.y.toFixed(2)),
       width:parseFloat(c.width.toFixed(2)),
-      height:parseFloat(c.height.toFixed(2))
+      height:parseFloat(c.height.toFixed(2)),
     };
     window.imageSelectionData = imageSelectionData;
 
     if(window.currentAnnotationEdition){
-        window.currentAnnotationEdition.data = imageSelectionData;
+      window.currentAnnotationEdition.data = imageSelectionData;
     }
     
   }
@@ -46,7 +46,7 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
     if (!completedCrop || !previewCanvasRef.current || !imgRef.current) {
       return;
     }
-
+    
     const image = imgRef.current;
     const canvas = previewCanvasRef.current;
     const crop = completedCrop;
@@ -55,6 +55,10 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
     const scaleY = image.naturalHeight / image.height;
     const ctx = canvas.getContext('2d');
     const pixelRatio = window.devicePixelRatio;
+
+    // #21
+    window.imageRatio = scaleX;
+    //crop.unit = '%';
 
     canvas.width = crop.width * pixelRatio;
     canvas.height = crop.height * pixelRatio;
@@ -73,10 +77,12 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
       crop.width,
       crop.height
     );
+
   }, [completedCrop]);
 
+/////////////////////////////////
   var imageCanvas = [];
-  canvas.forEach((c) => {
+  props.canvas && props.canvas.forEach((c) => {
 
     var coords = c.areaCoords.split(',');
 /*
@@ -85,10 +91,10 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
     });
 */
     var styleImageCanvas = {
-      display:showImageCanvas?"block":"none",
+      display:props.showImageCanvas?"block":"none",
       position: "absolute",
-      top: coords[1]+"px",
-      left:coords[0]+"px",
+      top: coords[1]/coords[4]+"px", // #21
+      left:coords[0]/coords[4]+"px", // #21
       border: "solid",
       borderColor:(c.type==='S')?"red":"blue",
       cursor:"pointer"
@@ -97,9 +103,9 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
       className="imageCanvas"
       title={c.type+c.rank} 
       style={styleImageCanvas} 
-      width={coords[2]-coords[0]}
-      height={coords[3]-coords[1]}
-      onClick={()=>{showAnnotation(c.id)}}
+      width={(coords[2]-coords[0])/coords[4]} // #21
+      height={(coords[3]-coords[1])/coords[4]} // #21
+      onClick={()=>{props.showAnnotation(c.id)}}
       />);
 
     imageCanvas.push(canvas);
@@ -108,9 +114,9 @@ export default function ImageSelector({image,canvas,showAnnotation,showImageCanv
   
 
   return (
-    <div id={"ImageSelector_"+image.id} className="ImageSelector">
+    <div id={"ImageSelector_"+props.image.id} className="ImageSelector">
       <ReactCrop
-        src={"data:image/png;base64,"+image["TO_BASE64(content)"]}
+        src={"data:image/png;base64,"+props.image["TO_BASE64(content)"]}
         onImageLoaded={onLoad}
         crop={crop}
         onChange={handleChange()}

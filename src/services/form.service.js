@@ -16,6 +16,14 @@ class FormService {
 
 	}
 
+	get(id) {
+		return new Promise((resolve, reject) => {
+	    axios.get(API_URL + "forms/" + id,{headers: authHeader()})
+	      .then(res => { resolve(res) })
+	      .catch(err => { reject(err) })
+	    });
+	}
+
   	create(kindOf, text, annotation_id) {
 
 		let data = {kindOf:kindOf,text:text,annotation_id:annotation_id};

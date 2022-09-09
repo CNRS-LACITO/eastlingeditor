@@ -13,6 +13,7 @@ import MarkersPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.markers.js';
 
 import { AppBar, Button, Drawer, Tabs, Tab, Typography, Box, Switch } from '@material-ui/core';
 import Chip from '@material-ui/core/Chip';
+import Avatar from '@material-ui/core/Avatar';
 
 import AddIcon from '@material-ui/icons/AddCircle';
 import ImportIcon from '@material-ui/icons/CloudDownload';
@@ -20,12 +21,14 @@ import IconButton from '@material-ui/core/IconButton';
 import PlayIcon from '@material-ui/icons/PlayCircleFilledWhite';
 import PauseIcon from '@material-ui/icons/PauseCircleFilled';
 import CloseIcon from '@material-ui/icons/Close';
+import DeleteIcon from '@material-ui/icons/Delete';
+import MicOffIcon from '@material-ui/icons/MicOff';
 import ZoomIn from '@material-ui/icons/ZoomIn';
 import ZoomOut from '@material-ui/icons/ZoomOut';
 
 import Slider from '@material-ui/core/Slider';
-import ImageSelector from './imageSelector.component';
-import 'react-image-crop/dist/ReactCrop.css';
+
+import ImageMultiSelector from './imageMultiSelector.component';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -39,6 +42,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormLabel from '@material-ui/core/FormLabel';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
+import Checkbox from '@material-ui/core/Checkbox';
 
 import DocumentAnnotation from './document.annotation.component';
 import DocumentAnnotationsImport from './document.annotations.import.component';
@@ -58,7 +62,7 @@ class DocumentAnnotations extends React.Component {
     this.state = {
       playing: false,
       zoom: 10,
-      tabValue:0,
+      tabValue:window.tabValue?window.tabValue:0,
       crop:null,
       annotationsPanel: false,
       annotationPanel: false,
@@ -72,6 +76,7 @@ class DocumentAnnotations extends React.Component {
       audioSelection:false,
       imageSelection:false,
       openCreateDialog:false,
+      openDeleteDialog:false,
       newAnnotationType:null,
       parentAnnotations:[],
       parentAnnotationId:0,
@@ -79,7 +84,9 @@ class DocumentAnnotations extends React.Component {
       selectedAnnotation: {},
       imageCanvas:[],
       showImageCanvas:true,
-      hasAudioSelection:false
+      hasAudioSelection:false,
+      activeAnnotationId:this.props.activeAnnotationId?this.props.activeAnnotationId:0,
+      selectedTreeAnnotations:[]
     };
     this.previewCanvasRef = React.createRef();
   }
@@ -125,8 +132,15 @@ class DocumentAnnotations extends React.Component {
   }
 
   handleCloseCreateDrawer = (event) => {
+    var params = new URLSearchParams(window.location.search);
+    params.delete('annotation');
+
+    var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + params.toString();
+    window.history.pushState('test','',newUrl);
+
     this.setState({
-        annotationPanel: false
+        annotationPanel: false,
+        activeAnnotationId:0
       });
     if(this.state.change > 0)
     this.refreshAnnotations();
@@ -138,13 +152,21 @@ class DocumentAnnotations extends React.Component {
         newAnnotationType:null,
         parentAnnotationId:null
       });
+    window.coordinates = undefined;
   };
 
   handleOpenCreateDialog = (event) => {
+
+    if((window.coordinates === undefined || window.coordinates.length === 0) && !this.state.hasAudioSelection){
+      alert("No selection in audio or image");
+      return;
+    }
     this.refreshParentAnnotationsList();
 
     // Autoselection of the right parent annotation
     var that = this;
+
+    console.log(this.state.parentAnnotations);
 
     that.setState({
       parentAnnotationId:this.state.parentAnnotations[0].id,
@@ -169,10 +191,6 @@ class DocumentAnnotations extends React.Component {
   };
 
   handleEditionState = (show,type,data) => {
-    this.setState({
-      annotationsPanel:false,
-      annotationPanel:false
-    });
 
     var message = (type==="audio")
     ?
@@ -180,12 +198,28 @@ class DocumentAnnotations extends React.Component {
     :
     "Editing "+window.currentAnnotationEdition.annotationLabel+" Image";
 
+    var coordinates = [];
+
+    window.currentAnnotationEdition.imageCoords.forEach((i) => {
+      var areaCoords = i.areaCoords.split(",");
+      coordinates.push({
+        x: parseFloat(areaCoords[0]) / parseFloat(areaCoords[4]),
+        y: parseFloat(areaCoords[1]) / parseFloat(areaCoords[4]),
+        width: (parseFloat(areaCoords[2]) - parseFloat(areaCoords[0])) / parseFloat(areaCoords[4]),
+        height: (parseFloat(areaCoords[3]) - parseFloat(areaCoords[1])) / parseFloat(areaCoords[4]),
+      });
+    });
+
     this.setState({
+      annotationsPanel:false,
+      annotationPanel:false,
       openEditionNotification:show,
       editionType:type,
       editionData:data,
       editionNotification:message,
-      imageSelection:data
+      imageSelection:data,
+      coordinates:coordinates,
+      showImageCanvas:(type ==="image")?false:this.state.showImageCanvas,
     });
   };
 
@@ -195,13 +229,30 @@ class DocumentAnnotations extends React.Component {
       loading: true,
     });
 
+    var imageCoords = [];
+
+    window.imageSelectionData && window.imageSelectionData.forEach((c)=>{
+        var coords=[];
+        coords.push(c.x*window.imageRatio);
+        coords.push(c.y*window.imageRatio);
+        coords.push((c.x + c.width)*window.imageRatio);
+        coords.push((c.y + c.height)*window.imageRatio);
+        coords.push(window.imageRatio);
+
+        imageCoords.push({
+          "image_id":c.imageId,
+          "areaCoords":coords.join(',')
+        });
+      });
+
     var data={
       document_id:this.props.documentId,
       type:this.state.newAnnotationType,
       rank:this.state.nextChildRank,
       parent_id:this.state.parentAnnotationId,
-      image_id:window.imageSelectionData?window.imageSelectionData.image_id:null,
-      areaCoords:window.imageSelectionData?window.imageSelectionData.x+","+window.imageSelectionData.y+","+(window.imageSelectionData.x+window.imageSelectionData.width)+","+(window.imageSelectionData.y+window.imageSelectionData.height):null,
+      //image_id:window.imageSelectionData?window.imageSelectionData.image_id:null,
+      //areaCoords:window.imageSelectionData?(window.imageSelectionData.x*window.imageRatio)+","+(window.imageSelectionData.y*window.imageRatio)+","+((window.imageSelectionData.x+window.imageSelectionData.width)*window.imageRatio)+","+((window.imageSelectionData.y+window.imageSelectionData.height)*window.imageRatio)+","+window.imageRatio:null,
+      imageCoords:imageCoords,
       audioStart:parseFloat(this.state.audioSelection.start),
       audioEnd:parseFloat(this.state.audioSelection.end)
     };
@@ -214,6 +265,7 @@ class DocumentAnnotations extends React.Component {
             editionData:response.data,
             annotationPanel:true
           });
+          
         },
         error => {
           if(error.response.status===401) this.props.history.push('/login');
@@ -265,16 +317,38 @@ class DocumentAnnotations extends React.Component {
           alert(resMessage);
         });
 
-    var coords=[];
+    //Multi image crops feature
+    
+    var image_coords = [];
 
+    // #21 window.imageRatio
+    //TODO si multi image
     if(this.state.editionType==='image'){
-      coords.push(window.currentAnnotationEdition.data.x);
-      coords.push(window.currentAnnotationEdition.data.y);
-      coords.push(window.currentAnnotationEdition.data.x + window.currentAnnotationEdition.data.width);
-      coords.push(window.currentAnnotationEdition.data.y + window.currentAnnotationEdition.data.height);
+      
+      if(window.currentAnnotationEdition.imageAddition){
+        image_coords = window.currentAnnotationEdition.imageCoords;
+      }
+
+      console.log(window.currentAnnotationEdition);
+
+      // buggingwindow.currentAnnotationEdition.data.forEach((c)=>{
+      window.imageSelectionData.forEach((c)=>{
+        var coords=[];
+        coords.push(c.x*window.imageRatio);
+        coords.push(c.y*window.imageRatio);
+        coords.push((c.x + c.width)*window.imageRatio);
+        coords.push((c.y + c.height)*window.imageRatio);
+        coords.push(window.imageRatio);
+
+        image_coords.push({
+          "image_id":c.imageId,
+          "areaCoords":coords.join(',')
+        });
+      });
+
     }
 
-    this.state.editionType==='image' && AnnotationService.update(this.state.editionData.annotationId,{image_id:window.currentAnnotationEdition.data.image_id,areaCoords:coords.join(',')}).then(
+    this.state.editionType==='image' && AnnotationService.update(this.state.editionData.annotationId,{imageCoords:image_coords}).then(
       (response) => {
           this.setState({
             loading:false
@@ -332,6 +406,8 @@ class DocumentAnnotations extends React.Component {
     this.state.annotations.forEach(function(t){
       list.push({
         'id':t.id,
+        'rank':0,
+        'parent_id':null,
         'label':that.props.documentType,
         'childrenType':that.props.documentType==="TEXT"?'S':'W',
         'audioStart':t.audioStart,
@@ -342,6 +418,9 @@ class DocumentAnnotations extends React.Component {
       t.children_annotations.forEach(function(s){
         list.push({
           'id':s.id,
+          'rank':s.rank,
+          'type':s.type,
+          'parent_id':t.id,
           'label':((that.props.documentType==="TEXT"?'S':'W')+s.rank),
           'childrenType':that.props.documentType==="TEXT"?'W':'M',
           'audioStart':s.audioStart,
@@ -352,12 +431,31 @@ class DocumentAnnotations extends React.Component {
         s.children_annotations.forEach(function(w){
           list.push({
             'id':w.id,
+            'rank':w.rank,
+            'type':w.type,
+            'parent_id':s.id,
             'label':('S'+s.rank+'>W'+w.rank),
             'childrenType':'M',
             'audioStart':w.audioStart,
             'audioEnd':w.audioEnd
           });
           var nextMorphemeRank = 0;
+
+          w.children_annotations.forEach(function(m){
+            list.push({
+              'id':m.id,
+              'rank':m.rank,
+              'type':m.type,
+              'parent_id':w.id,
+              'label':('S'+s.rank+'>W'+w.rank+'>M'+m.rank),
+              'childrenType':'NONE',
+              'audioStart':m.audioStart,
+              'audioEnd':m.audioEnd
+            });
+
+            nextMorphemeRank = (nextMorphemeRank < m.rank) ? (m.rank) : nextMorphemeRank;
+
+          });
 
           var w_list = list.filter(a => a.id === w.id)[0];
           w_list.nextChildRank = nextMorphemeRank+1;
@@ -380,13 +478,17 @@ class DocumentAnnotations extends React.Component {
   }
 
   loadCanvas = (annotation,array) => {
-    array.push({
-        image_id:annotation.image_id,
+    annotation.imageCoords && annotation.imageCoords.forEach((imageCoord)=>{
+      array.push({
+        image_id:imageCoord.image_id,
         id:annotation.id,
         type:annotation.type,
         rank:annotation.rank,
-        areaCoords:annotation.areaCoords
+        areaCoords:imageCoord.areaCoords,
+        hasForm:annotation.forms.length,
+        hasTranslation:annotation.translations.length
       });
+    });
 
     annotation.children_annotations.forEach((a)=>{
       this.loadCanvas(a,array);
@@ -394,21 +496,172 @@ class DocumentAnnotations extends React.Component {
 
   }
 
+  handleCheckTree = (e) => {
+    
+    var array = this.state.selectedTreeAnnotations;
+    var annotation = e.target.value.split('_');
+
+    if(e.target.checked){
+      array.push({
+        id:annotation[0],
+        type:annotation[1].substr(0,1),
+        label:annotation[1]
+      });
+    }else{
+      array = array.filter(item => (item.id !== annotation[0] || item.type !== annotation[1].substr(0,1)));
+    }
+    
+    this.setState({
+      selectedTreeAnnotations:array
+    });
+
+
+  }
+
   convertAnnotationsToTree = (annotation) => {
-    return (
-      <Tree 
-        key={annotation.id}
-        canHide = {annotation.type !== 'T'}
-        content={annotation.forms && annotation.forms.length > 0 && annotation.forms[0].text} 
-        type={annotation.type === 'T' ? 'Annotations' : (annotation.type+annotation.rank)}
-        onClick={() => this.showAnnotation(annotation.id)}
-        open={this.props.expanded}
-        >
-        {
-          annotation.children_annotations && annotation.children_annotations.map((children_annotation) => this.convertAnnotationsToTree(children_annotation))
-        }
-      </Tree>
-    );
+
+    annotation.children_annotations.sort((a, b) => a.rank - b.rank);
+
+    var that = this;
+    var childTypes = {
+      'T':'sentence','S':'word','W':'morpheme',
+    };
+
+    var badgeStyleCommon = {
+        //position: "absolute",
+        top:"0px",
+        width: "15px",
+        height: "15px",
+        borderRadius: "50%",
+        color: "white",
+        fontSize: "0.6rem",
+        fontWeight: "bold",
+        textAlign: "center",
+        padding:"3px"
+      };
+
+    var badgeStyleForm = {
+        position: badgeStyleCommon.position,
+        top:badgeStyleCommon.top,
+        width: badgeStyleCommon.width,
+        height: badgeStyleCommon.height,
+        borderRadius: badgeStyleCommon.borderRadius,
+        color: badgeStyleCommon.color,
+        fontSize: badgeStyleCommon.fontSize,
+        fontWeight: badgeStyleCommon.fontWeight,
+        textAlign: badgeStyleCommon.textAlign,
+        paddingLeft:badgeStyleCommon.padding,
+        paddingRight:badgeStyleCommon.padding
+      };
+
+    var badgeStyleTranslation = {
+        position: badgeStyleCommon.position,
+        top:badgeStyleCommon.top,
+        width: badgeStyleCommon.width,
+        height: badgeStyleCommon.height,
+        borderRadius: badgeStyleCommon.borderRadius,
+        color: badgeStyleCommon.color,
+        fontSize: badgeStyleCommon.fontSize,
+        fontWeight: badgeStyleCommon.fontWeight,
+        textAlign: badgeStyleCommon.textAlign,
+        paddingLeft:badgeStyleCommon.padding,
+        paddingRight:badgeStyleCommon.padding
+      };
+
+      var badgeStyleAudio = {
+        position: badgeStyleCommon.position,
+        top:badgeStyleCommon.top,
+        width: badgeStyleCommon.width,
+        height: badgeStyleCommon.height,
+        borderRadius: badgeStyleCommon.borderRadius,
+        color: badgeStyleCommon.color,
+        fontSize: badgeStyleCommon.fontSize,
+        fontWeight: badgeStyleCommon.fontWeight,
+        textAlign: badgeStyleCommon.textAlign,
+        paddingLeft:badgeStyleCommon.padding,
+        paddingRight:badgeStyleCommon.padding
+      };
+
+    var badgeStyleImage = {
+        position: badgeStyleCommon.position,
+        top:badgeStyleCommon.top,
+        width: badgeStyleCommon.width,
+        height: badgeStyleCommon.height,
+        borderRadius: badgeStyleCommon.borderRadius,
+        color: badgeStyleCommon.color,
+        fontSize: badgeStyleCommon.fontSize,
+        fontWeight: badgeStyleCommon.fontWeight,
+        textAlign: badgeStyleCommon.textAlign,
+        paddingLeft:badgeStyleCommon.padding,
+        paddingRight:badgeStyleCommon.padding
+      };
+
+      var formInfo = "";var translationInfo = "";var audioInfo = "";var imageInfo = "";
+      //FORM INFO
+      if(annotation.forms.length > 0){
+        badgeStyleForm.backgroundColor = "green";
+        formInfo = "At least one form exists";
+      }else{
+        badgeStyleForm.backgroundColor = "red";
+        formInfo = "No form";
+      }
+      //TRANSL INFO
+      if(annotation.translations.length > 0){
+        badgeStyleTranslation.backgroundColor = "green";
+        translationInfo = "At least one translation exists";
+      }else{
+        badgeStyleTranslation.backgroundColor = "red";
+        translationInfo = "No translation";
+      }
+      //AUDIO INFO
+      if( (parseFloat(annotation.audioStart) + parseFloat(annotation.audioEnd)) > 0){
+        badgeStyleAudio.backgroundColor = "green";
+        audioInfo = "Audio selection exists";
+      }else{
+        badgeStyleAudio.backgroundColor = "red";
+        audioInfo = "No audio selection";
+      }
+      //IMAGE INFO
+      if(annotation.imageCoords && annotation.imageCoords.length > 0){
+        badgeStyleImage.backgroundColor = "green";
+        imageInfo = "Image selection exists";
+      }else{
+        badgeStyleImage.backgroundColor = "red";
+        imageInfo = "No image selection";
+      }
+
+
+      return (
+        <Tree 
+          key={annotation.id}
+          canHide = {annotation.type !== 'T'}
+          content={annotation.type !== 'T' && (<React.Fragment>
+        {annotation.forms && annotation.forms.length > 0 && annotation.forms[0].text}
+        <span>  </span>
+        <span class="infoBadge" style={badgeStyleForm} title={formInfo} >F</span>
+        <span class="infoBadge" style={badgeStyleTranslation} title={translationInfo} >T</span>
+        {this.props.recording !== null && <span class="infoBadge" style={badgeStyleAudio} title={audioInfo} >A</span>}
+        {this.props.images.length > 0 && <span class="infoBadge" style={badgeStyleImage} title={imageInfo} >I</span>}
+      </React.Fragment>)} 
+          type={annotation.type === 'T' ? 'Annotations' : (<FormControlLabel
+          control={
+            <Checkbox
+              onChange={that.handleCheckTree}
+              value={annotation.id+'_'+annotation.type+annotation.rank}
+              name="checkedTree"
+              color="primary"
+            />
+          }
+          label={annotation.type+annotation.rank}
+        />)}
+          onClick={() => this.showAnnotation(this.props.documentId,annotation.id)}
+          open={this.props.expanded}
+          >
+          {
+            annotation.children_annotations && annotation.children_annotations.map((children_annotation) => this.convertAnnotationsToTree(children_annotation))
+          }
+        </Tree>
+      );
 
   }
 
@@ -432,7 +685,7 @@ class DocumentAnnotations extends React.Component {
           this.setState({
             imageCanvas:canvasList
           });
-
+          window.coordinates = undefined;
         },
         error => {
           if(error.response.status===401) this.props.history.push('/login');
@@ -491,10 +744,9 @@ class DocumentAnnotations extends React.Component {
       });
   }
 
-  showAnnotation = (annotationId) => {
-    AnnotationService.get(annotationId).then(
+  showAnnotation = (documentId,annotationId) => {
+    AnnotationService.get(documentId,annotationId).then(
         (response) => {
-            console.log('inside response');
             this.setState({
               annotationPanel:true,
               selectedAnnotation:response
@@ -512,6 +764,64 @@ class DocumentAnnotations extends React.Component {
             alert(resMessage);
           });
   }
+
+  handleCloseDeleteDialog = (event) => {
+    this.setState({
+        openDeleteDialog: false
+      });
+  };
+
+  handleOpenDeleteDialog = (event) => {
+    this.setState({
+        openDeleteDialog: true
+      });
+  };
+
+  handleDeleteAnnotation = (event) => {
+    //todo
+    this.setState({
+      loading: true
+    });
+
+    var checkToDel = this.state.selectedTreeAnnotations.length;
+    var countDeleted = 0;
+
+    this.state.selectedTreeAnnotations.forEach((a)=>{
+
+      AnnotationService.delete(a.id).then(
+      (response) => {
+          countDeleted++;
+          console.log(checkToDel,countDeleted);
+
+          if(countDeleted === checkToDel){
+            this.setState({
+              loading: false
+            });
+            this.handleCloseDeleteDialog();
+            this.refreshAnnotations();
+          }
+            
+          
+        },
+        error => {
+          if(error.response.status===401) this.props.history.push('/login');
+          const resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+
+          this.setState({
+            loading: false,
+            message: resMessage
+          });
+        });
+
+    });
+  };
+
+  
 
   componentDidMount(){
 
@@ -616,7 +926,7 @@ class DocumentAnnotations extends React.Component {
 
       window.wavesurfer.on('marker-click', function(region, e){
 
-        that.showAnnotation(region.label.split("_")[0]);
+        that.showAnnotation(that.props.documentId,region.label.split("_")[0]);
         e.stopPropagation();
       });
 
@@ -645,12 +955,19 @@ class DocumentAnnotations extends React.Component {
 
         return false;}
     },{passive: false});
+
+    if(this.state.activeAnnotationId>0){
+      this.showAnnotation(this.props.documentId,this.state.activeAnnotationId);
+    }
     
   }
 
 
   handlePlay = () => {
-    this.setState({ playing: !this.state.playing, crop: window.crop });
+    this.setState({ 
+      playing: !this.state.playing, 
+      //crop: window.crop 
+    });
     window.wavesurfer.playPause();
   };
 
@@ -663,8 +980,8 @@ class DocumentAnnotations extends React.Component {
     this.setState({importPanel: open });
   };
 
-  setImageSelection = () => {
-    this.setState({hasImageSelection:true});
+  selectionExists = (exist) => {
+    this.setState({hasImageSelection:exist});
   }
 
   annotationHasChanged = () => {
@@ -672,10 +989,58 @@ class DocumentAnnotations extends React.Component {
   }
 
   render = () => {
-    console.log('render Annotations');
+
     this.loadRegions(this.state.annotations);
 
     var docType = this.props.documentType;
+
+    var badgeStyleCommon = {
+        //position: "absolute",
+        top:"0px",
+        width: "15px",
+        height: "15px",
+        borderRadius: "50%",
+        color: "white",
+        fontSize: "0.6rem",
+        fontWeight: "bold",
+        textAlign: "center",
+        padding:"4px"
+      };
+
+    var badgeStyleForm = {
+        position: badgeStyleCommon.position,
+        top:badgeStyleCommon.top,
+        width: badgeStyleCommon.width,
+        height: badgeStyleCommon.height,
+        borderRadius: badgeStyleCommon.borderRadius,
+        color: badgeStyleCommon.color,
+        fontSize: badgeStyleCommon.fontSize,
+        fontWeight: badgeStyleCommon.fontWeight,
+        textAlign: badgeStyleCommon.textAlign,
+        paddingLeft:badgeStyleCommon.padding,
+        paddingRight:badgeStyleCommon.padding
+      };
+
+    var badgeStyleTranslation = {
+        position: badgeStyleCommon.position,
+        top:badgeStyleCommon.top,
+        width: badgeStyleCommon.width,
+        height: badgeStyleCommon.height,
+        borderRadius: badgeStyleCommon.borderRadius,
+        color: badgeStyleCommon.color,
+        fontSize: badgeStyleCommon.fontSize,
+        fontWeight: badgeStyleCommon.fontWeight,
+        textAlign: badgeStyleCommon.textAlign,
+        paddingLeft:badgeStyleCommon.padding,
+        paddingRight:badgeStyleCommon.padding
+      };
+
+      badgeStyleForm.right = "10px";
+      badgeStyleTranslation.right = "0px";
+
+      //badgeStyleForm.backgroundColor = (annotation.forms.length > 0) ? "green":"red";
+      //badgeStyleTranslation.backgroundColor = (annotation.translations.length > 0) ? "green":"red";
+
 
     function TabPanel(props) {
 
@@ -700,6 +1065,7 @@ class DocumentAnnotations extends React.Component {
 
     const handleChange = (event, newValue) => {
       this.setState({tabValue:newValue});
+      window.tabValue = newValue;
     };
 
     function a11yProps(index) {
@@ -711,6 +1077,7 @@ class DocumentAnnotations extends React.Component {
 
     var imagesTabs = [];
     var imagesTabContents = [];
+
     var that = this;
 
     this.props.images.forEach(function(image,index){
@@ -727,23 +1094,31 @@ class DocumentAnnotations extends React.Component {
       imagesTabs.push(<Tab label={image.name} {...a11yProps(image.name)} />)
       imagesTabContents.push(
         <TabPanel key={image.id} value={that.state.tabValue} index={index} id={image.id}>
-        <ImageSelector
+        <ImageMultiSelector
           key={image.id}
           image={image}
           annotations={that.state.annotations}
           canvas={imageCanvas}
+          coordinates={that.state.coordinates}
           showAnnotation={that.showAnnotation}
           showImageCanvas={that.state.showImageCanvas}
+          selectionExists={that.selectionExists}
+          children={0}
+          documentId={that.props.documentId}
         />
+
+
+        
+
         </TabPanel>);
     });
 
     return (
       <React.Fragment>
         
-        {this.props.recording === null ? <Typography>No recording</Typography> : 
+        {this.props.recording === null ? <Chip icon={<MicOffIcon />} label="No audio recording" size="small"/> : 
           <div>
-            <IconButton color="primary" aria-label="Play" onClick={this.handlePlay}>
+            <IconButton color="primary" title="Play audio" aria-label="Play audio" onClick={this.handlePlay}>
               {!this.state.playing ? <PlayIcon /> : <PauseIcon /> }
             </IconButton>
 
@@ -771,36 +1146,6 @@ class DocumentAnnotations extends React.Component {
         }
 
         <span>
-          {(this.state.hasAudioSelection || this.state.hasImageSelection) && 
-            <Chip
-              icon={<AddIcon />}
-              label="Create Annotation"
-              clickable
-              size="small"
-              color="primary"
-              onClick={this.handleOpenCreateDialog}
-            />
-          }
-          <Drawer anchor="bottom" open={this.state.annotationPanel} onClose={this.handleCloseCreateDrawer}>
-            <div
-              role="presentation"
-            >
-              <DocumentAnnotation 
-                data={this.state.selectedAnnotation}
-                documentType={docType}
-                refreshAnnotations={this.refreshAnnotations}
-                handleEditionState={this.handleEditionState}
-                parentAnnotations={this.state.parentAnnotations}
-                available_lang={this.props.available_lang}
-                available_kindOf={this.props.available_kindOf}
-                annotationHasChanged={this.annotationHasChanged}
-              />
-            </div>
-          </Drawer>
-        </span>
-        
-
-        <span>
           <Chip
             icon={<ImportIcon />}
             label="Import Annotations"
@@ -821,7 +1166,69 @@ class DocumentAnnotations extends React.Component {
           </Drawer>
         </span>
 
+        <span>
+            <Chip
+              icon={<AddIcon />}
+              label="Create Annotation"
+              clickable
+              size="small"
+              color="primary"
+              onClick={this.handleOpenCreateDialog}
+            />
+
+          <Drawer anchor="bottom" open={this.state.annotationPanel} onClose={this.handleCloseCreateDrawer}>
+            <div
+              role="presentation"
+            >
+              <DocumentAnnotation 
+                data={this.state.selectedAnnotation}
+                documentType={docType}
+                refreshAnnotations={this.refreshAnnotations}
+                handleEditionState={this.handleEditionState}
+                parentAnnotations={this.state.parentAnnotations}
+                available_lang={this.props.available_lang}
+                available_kindOf={this.props.available_kindOf}
+                annotationHasChanged={this.annotationHasChanged}
+                onClose={this.handleCloseCreateDrawer}
+              />
+            </div>
+          </Drawer>
+        </span>
+
+        <Chip
+              icon={<DeleteIcon />}
+              label="Delete selected annotation(s)"
+              clickable
+              size="small"
+              color="primary"
+              onClick={this.handleOpenDeleteDialog}
+              style={{display:((this.state.selectedTreeAnnotations.length===0)?'none':'inline-flex')}}
+            />
+
         {this.convertAnnotationsToTree(this.state.annotations[0])}
+
+        <Dialog open={this.state.openDeleteDialog} onClose={this.handleCloseDeleteDialog} aria-labelledby="form-deletedialog-title">
+            <DialogTitle id="form-deletedialog-title">Delete annotation</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Delete annotation(s) ?
+                {
+                  this.state.selectedTreeAnnotations.map((a) => (
+                  ' '+a.label
+                ))}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.handleCloseDeleteDialog} color="primary">
+                Cancel
+              </Button>
+              {!this.state.loading && <Button onClick={this.handleDeleteAnnotation} color="primary">
+                Delete annotation
+              </Button>
+              }
+              {this.state.loading && <CircularProgress />}
+            </DialogActions>
+          </Dialog>
 
         {this.props.images.length > 0 ? 
           (
@@ -839,7 +1246,7 @@ class DocumentAnnotations extends React.Component {
             </div>
           )
         :
-        <Typography>No image</Typography> 
+        <Chip icon={<MicOffIcon />} label="No image" size="small"/> 
       }
         
         <Snackbar
@@ -943,6 +1350,7 @@ class DocumentAnnotations extends React.Component {
               {this.state.loading && <CircularProgress />}
             </DialogActions>
           </Dialog>
+          <div style={{minHeight:"90px"}}></div>
       </React.Fragment>
     );
   }

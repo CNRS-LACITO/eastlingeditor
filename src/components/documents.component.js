@@ -260,16 +260,16 @@ class Documents extends Component {
 
             return(
             <div id={"actionsDocument_"+params.id}>
-            <IconButton color="primary" aria-label="Edit document" onClick={()=>this.props.history.push("/documents/" + params.id + "?tab=0")}>
+            <IconButton color="primary" title="Edit document" aria-label="Edit document" onClick={()=>this.props.history.push("/documents/" + params.id + "?tab=0")}>
                 <EditIcon />
             </IconButton>
-            <IconButton color="primary" aria-label="Download document">
+            <IconButton color="primary" title="Download document" aria-label="Download document">
               <CloudDownloadIcon />
             </IconButton>
-            <IconButton color="primary" aria-label="Send document for deposit">
+            <IconButton color="primary" title="Send document for deposit" aria-label="Send document for deposit">
               <SendIcon />
             </IconButton>
-            <IconButton color="primary" aria-label="Delete document" onClick={onClick}>
+            <IconButton color="primary" title="Delete document" aria-label="Delete document" onClick={onClick}>
               <DeleteIcon />
             </IconButton>
             </div>
@@ -297,7 +297,7 @@ class Documents extends Component {
           </header>
           <div>
             <div style={{ height: 600, width: '80%' }}>
-              <IconButton color="primary" aria-label="Add document" onClick={this.handleOpenCreateDialog}>
+              <IconButton color="primary" title="Create a new document" aria-label="Create a new document" onClick={this.handleOpenCreateDialog}>
                   <AddIcon />
               </IconButton>
               <Dialog open={this.state.openCreateDialog} onClose={this.handleCloseCreateDialog} aria-labelledby="form-createdialog-title">

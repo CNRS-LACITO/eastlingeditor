@@ -60,6 +60,22 @@ class DocumentService {
 	      .catch(err => { reject(err) })
 	    });
   	}
+
+  	getAnnotationsXML(docId) {
+  		var headers = authHeader();
+  		headers['Content-Type'] = 'xml';
+
+	    return axios.get(API_URL + 'documents/' + docId + '/annotationsxml', { headers: headers })
+	      .then(response => response);
+	  }
+
+	getAnnotationsYAML(docId) {
+  		var headers = authHeader();
+  		headers['Content-Type'] = 'xml';
+
+	    return axios.get(API_URL + 'documents/' + docId + '/annotationsyaml', { headers: headers })
+	      .then(response => response);
+	  }
 }
 
 export default new DocumentService();

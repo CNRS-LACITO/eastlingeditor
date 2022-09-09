@@ -11,8 +11,11 @@ class Home extends Component {
       currentUser: AuthService.getCurrentUser(),
     };
 
-    if(AuthService.getCurrentUser() === null)
+    if(AuthService.getCurrentUser() === null){
       this.props.history.push('/login');
+    }else{
+      this.props.history.push('/documents');
+    }
   }
 
   componentDidMount() {

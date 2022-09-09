@@ -112,7 +112,7 @@ class TitleCreateForm extends Component {
           value={this.state.title}
           onChange={this.onChange}
         />
-        <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.lang.length >=1 && this.state.title.length >=1)}>
+        <IconButton color="primary" title="Save" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.lang.length >=1 && this.state.title.length >=1)}>
             <SaveIcon />
         </IconButton>
       </Container>

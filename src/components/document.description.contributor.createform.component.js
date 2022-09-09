@@ -118,7 +118,7 @@ class ContributorCreateForm extends Component {
             <MenuItem value={"annotator"}>Annotator</MenuItem>
           </Select>
         </FormControl>
-        <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.firstname.length >=1 && this.state.lastname.length >=1)}>
+        <IconButton color="primary" title="Save" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.firstname.length >=1 && this.state.lastname.length >=1)}>
             <SaveIcon />
         </IconButton>
       </Container>

@@ -10,7 +10,6 @@ import Annotations from './player/Annotations';
 
 
 export default class DocumentPreview extends Component {
-  
   /*
   ** Convert the annotations to fit with the Pangloss Player
   */
@@ -18,18 +17,55 @@ export default class DocumentPreview extends Component {
 
     var annotationsPlayer = {};
     var timeList = [];
+    var typeOf = {
+      'text':{
+        'transcriptions':[],
+        'translations':[]
+      },
+      'sentence':{
+        'transcriptions':[],
+        'translations':[]
+      },
+      'word':{
+        'transcriptions':[],
+        'translations':[]
+      },
+      'morpheme':{
+        'transcriptions':[],
+        'translations':[]
+      },
+      'note':{
+        'translations':[]
+      },
+    };
+
     var isWordList = (annotationsEditor.children_annotations && annotationsEditor.children_annotations[0].type === "W");
 
     annotationsPlayer.WORDLIST = {};
 
     annotationsPlayer.TEXT = {};
     annotationsPlayer.TEXT.FORM = annotationsEditor.forms;
-    annotationsPlayer.TEXT.TRANSL = [];
 
+    annotationsEditor.forms.forEach((f)=>{
+      (!typeOf.text.forms.includes(f.kindOf)) && typeOf.text.forms.push(f.kindOf);
+    });
+
+    annotationsPlayer.TEXT.TRANSL = [];
     annotationsEditor.translations.forEach((t)=>{
+      (!typeOf.text.translations.includes(t.lang)) && typeOf.text.translations.push(t.lang);
       annotationsPlayer.TEXT.TRANSL.push({
         'xml:lang':t.lang,
         text:t.text
+      });
+    });
+
+    annotationsPlayer.TEXT.NOTE = [];
+    annotationsEditor.notes.forEach((n)=>{
+      (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+      annotationsPlayer.TEXT.NOTE.push({
+        'xml:lang':n.lang,
+        message:n.text,
+        text:'',
       });
     });
 
@@ -40,23 +76,52 @@ export default class DocumentPreview extends Component {
       var sentence = {};
       sentence.AUDIO = {};
       sentence.FORM = s.forms;
-      sentence.TRANSL = [];
 
+      s.forms.forEach((f)=>{
+        (!typeOf.sentence.transcriptions.includes(f.kindOf)) && typeOf.sentence.transcriptions.push(f.kindOf);
+      });
+
+      sentence.TRANSL = [];
       s.translations.forEach((t)=>{
+        (!typeOf.sentence.translations.includes(t.lang)) && typeOf.sentence.translations.push(t.lang);
+
         sentence.TRANSL.push({
           'xml:lang':t.lang,
           text:t.text
         });
+
+        t.notes.forEach((n)=>{
+          (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+        });
+      
+
+      });
+
+      sentence.NOTE = [];
+      s.notes.forEach((n)=>{
+        (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+        sentence.NOTE.push({
+          'xml:lang':n.lang,
+          message:n.text,
+          text:'',
+        });
       });
 
       sentence.id = s.type+s.rank;
+      sentence.realId = s.id;
 
-      if(s.areaCoords!==null){
-        sentence.AREA = {};
-        sentence.AREA.image = "image"+s.image_id;
-        sentence.AREA.shape = "rect";
-        sentence.AREA.coords = s.areaCoords;
+      //14/07/2022 Adapt pour multi selection image
+      if(s.imageCoords!==null){
+        sentence.AREA = [];
+        s.imageCoords.forEach((i)=>{
+          sentence.AREA.push({
+            image:"image"+i.image_id,
+            shape:"rect",
+            coords:i.areaCoords
+          });
+        });
       }
+
       
       sentence.AUDIO.start = s.audioStart;
       sentence.AUDIO.end = s.audioEnd;
@@ -77,22 +142,45 @@ export default class DocumentPreview extends Component {
                       var word = {};
                       word.AUDIO = {};
                       word.FORM = w.forms;
-                      word.TRANSL = [];
 
+                      w.forms.forEach((f)=>{
+                        (!typeOf.word.transcriptions.includes(f.kindOf)) && typeOf.word.transcriptions.push(f.kindOf);
+                      });
+
+                      word.TRANSL = [];
                       w.translations.forEach((t)=>{
+
+                        (!typeOf.word.translations.includes(t.lang)) && typeOf.word.translations.push(t.lang);
+
                         word.TRANSL.push({
                           'xml:lang':t.lang,
                           text:t.text
+                        });
+
+                        t.notes.forEach((n)=>{
+                          (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+                        });
+
+                      });
+
+                      word.NOTE = [];
+                      w.notes.forEach((n)=>{
+                        (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+                        word.NOTE.push({
+                          'xml:lang':n.lang,
+                          message:n.text,
+                          text:'',
                         });
                       });
 
                       word.id = sentence.id+w.type+w.rank;
 
-                      if(w.areaCoords!==null){
+                      if(w.imageCoords!==null){
+                        //15/07/2022 : multi image : par convention on n'a qu'une boîte pour un mot
                         word.AREA = {};
-                        word.AREA.image = "image"+w.image_id;
+                        word.AREA.image = "image"+w.imageCoords[0].image_id;
                         word.AREA.shape = "rect";
-                        word.AREA.coords = w.areaCoords;
+                        word.AREA.coords = w.imageCoords[0].areaCoords;
                       }
                       
 
@@ -115,12 +203,33 @@ export default class DocumentPreview extends Component {
                                   var morph = {};
                                   morph.AUDIO = {};
                                   morph.FORM = m.forms;
-                                  morph.TRANSL = [];
 
+                                  m.forms.forEach((f)=>{
+                                    (!typeOf.morpheme.transcriptions.includes(f.kindOf)) && typeOf.morpheme.transcriptions.push(f.kindOf);
+                                  });
+
+                                  morph.TRANSL = [];
                                   m.translations.forEach((t)=>{
+
+                                    (!typeOf.morpheme.translations.includes(t.lang)) && typeOf.morpheme.translations.push(t.lang);
+                                    
                                     morph.TRANSL.push({
                                       'xml:lang':t.lang,
                                       text:t.text
+                                    });
+
+                                    t.notes.forEach((n)=>{
+                                      (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+                                    });
+                                  });
+
+                                  morph.NOTE = [];
+                                  m.notes.forEach((n)=>{
+                                    (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+                                    morph.NOTE.push({
+                                      'xml:lang':n.lang,
+                                      message:n.text,
+                                      text:'',
                                     });
                                   });
 
@@ -235,11 +344,12 @@ export default class DocumentPreview extends Component {
 
     });
 
-    console.log(annotationsPlayer);
+    console.log(annotationsEditor,annotationsPlayer);
 
     return {
       annotations:annotationsPlayer,
-      timeList:timeList
+      timeList:timeList,
+      typeOf:typeOf
     };
 
   }
@@ -254,22 +364,23 @@ export default class DocumentPreview extends Component {
         isAnnotationsLoaded : false,
         hasMediaError : false,
         mediaError : {},
-      hasAnnotationsError : false,
+        hasAnnotationsError : false,
         annotationsError : {},
-          MEDIAFILE : {},
-      annotations : {},
-      doi : '',
-      images : [],
-      /*displayOptions: this.props.displayOptions,*/
-      langOptions : {
-        transcriptions:[],translations:[]
-      },
-      /*options : this.props.typeOf,*/
-      isWordList : false,
-      timeList : [],
-      urlFile : '',
-      extensionFile : '',
-      playerLoaded : false
+        MEDIAFILE : {},
+        annotations : {},
+        doi : '',
+        images : [],
+        displayOptions: this.props.displayOptions,
+        langOptions : {
+          transcriptions:[],translations:[]
+        },
+        /*options : this.props.typeOf,*/
+        typeOf:this.props.typeOf,
+        isWordList : false,
+        timeList : [],
+        urlFile : '',
+        extensionFile : '',
+        playerLoaded : false
       };
     }
 
@@ -321,12 +432,17 @@ export default class DocumentPreview extends Component {
       };
 
     }
-
+/*
+    openAnnotation = (id) => {
+      console.log(id);
+    }
+*/
     render(){
 
       var convertedAnnotations = this.convertToPlayerFormat(this.props.annotations[0]);
       var annotationsPlayer = convertedAnnotations.annotations;
       var timeList = convertedAnnotations.timeList;
+      var typeOf = convertedAnnotations.typeOf;
       var images = [];
 
       this.props.images.forEach((i)=>{
@@ -344,7 +460,7 @@ export default class DocumentPreview extends Component {
             <Container>
               {this.props.recording && <Player file={{"type":"audio","url":'',"content":this.props.recording['TO_BASE64(content)']}} playerIsLoaded = {this.playerIsLoaded.bind(this)} />
 }
-              <DisplayOptions displayOptions={this.props.displayOptions} options={this.props.typeOf} isWordList={this.state.isWordList} />
+              <DisplayOptions displayOptions={this.props.displayOptions} options={typeOf} isWordList={this.state.isWordList} />
               {
               this.props.recording && this.state.playerLoaded && 
               <Annotations 
@@ -357,6 +473,7 @@ export default class DocumentPreview extends Component {
                 displayOptions={this.props.displayOptions} 
                 images={images} 
                 video={this.state.MEDIAFILE.type==="video"} 
+                openAnnotation={this.props.openAnnotation}
               />
               }
 
@@ -371,7 +488,9 @@ export default class DocumentPreview extends Component {
                 availableOptions={this.props.typeOf} 
                 displayOptions={this.props.displayOptions} 
                 images={images} 
-                video={this.state.MEDIAFILE.type==="video"} />
+                video={this.state.MEDIAFILE.type==="video"}
+                openAnnotation={this.props.openAnnotation}
+                />
               }
               </Container>
           </div>

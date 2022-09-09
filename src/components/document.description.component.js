@@ -12,6 +12,7 @@ import AvailableLanguage from './document.description.availablelang.component';
 import TitleCreateForm from './document.description.title.createform.component';
 import AvailableLanguageCreateForm from './document.description.availablelang.createform.component';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 import DocumentService from "../services/document.service";
 import ContributorService from "../services/contributor.service";
@@ -244,6 +245,10 @@ class DocumentDescription extends Component {
       });
     }
       
+    var top100Films = [
+    {title:"Shaw brothers"},
+    {title:"Tarantino"},
+    ];
 
     return(
 
@@ -252,6 +257,14 @@ class DocumentDescription extends Component {
        <div>
         
          <div>
+            <Autocomplete
+              id="free-solo-demo"
+              freeSolo
+              options={top100Films.map((option) => option.title)}
+              renderInput={(params) => (
+                <TextField {...params} label="freeSolo" margin="normal" variant="outlined" />
+              )}
+            />
             <TextField
                 id="lang"
                 label="Corpus"

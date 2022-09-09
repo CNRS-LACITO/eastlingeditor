@@ -9,6 +9,8 @@ import Typography from '@material-ui/core/Typography';
 import PlayButton from './PlayButton';
 import blue from "@material-ui/core/colors/blue";
 
+import { Link } from "react-router-dom";
+
 //BUG POPOVER
 //https://codepen.io/chocochip/pen/zYxMgRG
 class Sentence extends React.Component {
@@ -52,7 +54,6 @@ class Sentence extends React.Component {
 	//DOI PopUp
 
 	const showDoi = (event) => {
-		//console.log(event.currentTarget.id);
 	    this.setState({ anchorEl: this.state.anchorEl ? null : event.currentTarget});
 	  };
 	const open = Boolean(this.state.anchorEl);
@@ -81,7 +82,6 @@ class Sentence extends React.Component {
 	//#17
 	// Get note(s) of the sentence
 	this.getNotes(this.props.s,notesJSON);
-
 //
 	// Get transcription(s) of the sentence
 	if(this.props.s.FORM !== undefined && this.props.s.FORM !== null){
@@ -103,11 +103,23 @@ class Sentence extends React.Component {
 		}
 	}
   	
-    
     if(this.props.s.AREA !== undefined && this.props.s.AREA !== null){
-    	var coords = this.props.s.AREA.coords.split(',');
+
+/*
+    	var coords = this.props.s.AREA[0].coords.split(',');
 	    var delta_x = coords[0];//offset for x, image positioning
 	    var delta_y = coords[1];//offset for y, image positioning
+	    
+*/
+			var delta_x = [];
+	    var delta_y = [];
+
+	    this.props.s.AREA.forEach((a) => {
+	    	var coords = a.coords.split(',');
+	    	delta_x[a.image] = coords[0];//offset for x, image positioning
+	    	delta_y[a.image] = coords[1];//offset for y, image positioning
+	    });
+
 	}
 	
 	// Get word(s) of the sentence
@@ -154,7 +166,40 @@ class Sentence extends React.Component {
 		    			
 		    		}
 
+		    			if(w.AREA !== undefined && w.AREA !== null){
+			        	var coords = w.AREA.coords.split(',');
+				        coords[0] -= delta_x[w.AREA.image];
+				        coords[1] -= delta_y[w.AREA.image];
+								coords[2] -= delta_x[w.AREA.image];
+				        coords[3] -= delta_y[w.AREA.image];
 
+				        //var newCoords = coords.join(',');
+				        var canvasStyle = {
+				        	'position': 'absolute',
+				        	'top': coords[1],
+				        	'left': coords[0],
+				        }
+
+				        // Get transcription(s) of the word
+				        var word="";
+						  	if(w.FORM.length === undefined){
+						  		word = w.FORM.text
+								}else{
+								      word = (w.FORM[0]!==undefined) ? w.FORM[0].text:"";
+								}
+
+				        canvas.push(
+				        	<canvas 
+				        		image={w.AREA.image}
+				        		title={word} 
+				        		style={canvasStyle} 
+				        		wordid={w.id} 
+				        		width={coords[2]-coords[0]} height={coords[3]-coords[1]} 
+				        		onClick={()=>document.getElementById(w.id).click()} >
+				        		</canvas>
+				        );
+				        
+			        }
 		    	}else{
 
 		    		// Get note(s) of the word
@@ -166,31 +211,37 @@ class Sentence extends React.Component {
 
 			        if(w.AREA !== undefined && w.AREA !== null){
 			        	var coords = w.AREA.coords.split(',');
-				        coords[0] -= delta_x;
-				        coords[1] -= delta_y;
-								coords[2] -= delta_x;
-				        coords[3] -= delta_y;
+				        coords[0] -= delta_x[w.AREA.image];
+				        coords[1] -= delta_y[w.AREA.image];
+								coords[2] -= delta_x[w.AREA.image];
+				        coords[3] -= delta_y[w.AREA.image];
 
 				        //var newCoords = coords.join(',');
 				        var canvasStyle = {
 				        	'position': 'absolute',
 				        	'top': coords[1],
 				        	'left': coords[0],
-				        	
 				        }
 
 				        // Get transcription(s) of the word
 				        var word="";
-					  	if(w.FORM.length === undefined){
-					  		word = w.FORM.text
-						}else{
-						      word = (w.FORM[0]!==undefined) ? w.FORM[0].text:"";
-						}
+						  	if(w.FORM.length === undefined){
+						  		word = w.FORM.text
+								}else{
+								      word = (w.FORM[0]!==undefined) ? w.FORM[0].text:"";
+								}
 
-				        canvas.push(
-				        	<canvas title={word} style={canvasStyle} wordid={w.id} width={coords[2]-coords[0]} height={coords[3]-coords[1]} onClick={()=>document.getElementById(w.id).click()} ></canvas>
+								canvas.push(
+				        	<canvas 
+				        		image={w.AREA.image}
+				        		title={word} 
+				        		style={canvasStyle} 
+				        		wordid={w.id} 
+				        		width={coords[2]-coords[0]} height={coords[3]-coords[1]} 
+				        		onClick={()=>document.getElementById(w.id).click()} >
+				        		</canvas>
 				        );
-				        
+
 			        }
 		    	}	
 		     	
@@ -213,20 +264,27 @@ class Sentence extends React.Component {
     	'display': 'inline-flex'
     }
 
+    var path = window.location.pathname.replace('/editor','');
+
+
     return (
       <div id={this.props.s.id} className="SENTENCE" ref={el => (this.instance = el)}>
 		<Card> 
 	      <CardContent>  	
 	      		{(this.props.s.AREA !== undefined) ? 
 	      		(
-	      		<Picture sentenceId={this.props.s.id} imageSrc={this.props.imageSrc} canvas={canvas} area={this.props.s.AREA} />
+	      		<Picture 
+	      			sentenceId={this.props.s.id} 
+	      			imageSrc={this.props.imageSrc} 
+	      			canvas={canvas} 
+	      			area={this.props.s.AREA} />
 	      		):(<div></div>)
 	      		}
 	       	
 	        <div style={{textAlign:"initial"}} className="annotationsBlock">
 
 	        	<Avatar aria-label="sentenceId" style={avatarStyle}>
-		            {this.props.s.id} 
+		            <Link to={`${path}?tab=2&annotation=${this.props.s.realId}`} onClick={() => this.props.openAnnotation(this.props.s.realId)}>{this.props.s.id}</Link>
 		          </Avatar>
 				<IconButton aria-describedby={popperId} onClick={showDoi} id={"btn_doi_"+this.props.s.id}><img className="doi" src="/dist/images/DOI_logo.svg" alt="doi" /></IconButton>
 	        	<Popper id={"doi_"+this.props.s.id} open={open} anchorEl={this.state.anchorEl} test={document.getElementById("btn_doi_"+this.props.s.id)}>

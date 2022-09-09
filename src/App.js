@@ -93,7 +93,9 @@ class App extends Component {
 
   logOut() {
     AuthService.logout();
-    this.props.history.push('/login');
+    this.props.history.push('/login',null);
+    window.location.reload();
+
   }
 
   handleToggle = () => {
@@ -122,7 +124,7 @@ class App extends Component {
   }
 
   render() {
-    const { openMenu,openNotification,notification, anchorRef } = this.state;
+    const { openMenu, anchorRef } = this.state;
 
     return (
       <MuiThemeProvider theme={theme}>
@@ -132,10 +134,12 @@ class App extends Component {
           aria-controls={openMenu ? 'menu-list-grow' : undefined}
           aria-haspopup="true"
           onClick={this.handleToggle}
+          title="Menu"
+          style={{position:'absolute'}}
         >
           <MenuIcon />
         </Button>
-        <Popper open={openMenu}  role={undefined} anchorEl={anchorRef.current} transition disablePortal>
+        <Popper style={{zIndex:99999}} open={openMenu}  role={undefined} anchorEl={anchorRef.current} transition disablePortal>
           {({ TransitionProps, placement }) => (
             <Grow
               {...TransitionProps}

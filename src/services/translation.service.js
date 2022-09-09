@@ -16,6 +16,14 @@ class TranslationService {
 	    
 	}
 
+	get(id) {
+		return new Promise((resolve, reject) => {
+	    axios.get(API_URL + "translations/" + id,{headers: authHeader()})
+	      .then(res => { resolve(res) })
+	      .catch(err => { reject(err) })
+	    });
+	}
+
   	create(lang, text, annotation_id) {
 
 		let data = {lang:lang,text:text,annotation_id:annotation_id};

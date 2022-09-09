@@ -3,9 +3,11 @@ import Container from '@material-ui/core/Container';
 import Chip from '@material-ui/core/Chip';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
+
 import EditIcon from '@material-ui/icons/Edit';
 import SaveIcon from '@material-ui/icons/Save';
 import CancelIcon from '@material-ui/icons/Cancel';
+import AddIcon from '@material-ui/icons/Add';
 
 export default class Image extends Component {
 
@@ -13,8 +15,8 @@ export default class Image extends Component {
     super(props);
     this.state = {
       inputEnabled:false,
-      areaCoords:this.props.areaCoords,
-      originalAreaCoords:this.props.areaCoords
+      imageCoords:this.props.imageCoords,
+      originalImageCoords:this.props.imageCoords
     };
 
   }
@@ -28,14 +30,23 @@ export default class Image extends Component {
     window.currentAnnotationEdition = {};
     window.currentAnnotationEdition.annotationId = this.props.annotationId;
     window.currentAnnotationEdition.annotationLabel = this.props.annotationLabel;
-        //Fire Error: handleEditionState(true,"image",data);
+    window.currentAnnotationEdition.imageAddition = false;
+    window.currentAnnotationEdition.imageCoords = this.props.imageCoords;
+    this.props.handleEditionState(true,"image",{annotationLabel:this.props.annotationLabel,annotationId:this.props.annotationId,imageCoords:this.state.imageCoords});
+  };
 
-    this.props.handleEditionState(true,"image",{annotationLabel:this.props.annotationLabel,annotationId:this.props.annotationId,areaCoords:this.state.areaCoords});
-
+  handleEditImageAddition = () => {
+    this.setState({inputEnabled:!this.state.inputEnabled});
+    window.currentAnnotationEdition = {};
+    window.currentAnnotationEdition.annotationId = this.props.annotationId;
+    window.currentAnnotationEdition.annotationLabel = this.props.annotationLabel;
+    window.currentAnnotationEdition.imageAddition = true;
+    window.currentAnnotationEdition.imageCoords = this.props.imageCoords;
+    this.props.handleEditionState(true,"image",{annotationLabel:this.props.annotationLabel,annotationId:this.props.annotationId,imageCoords:this.state.imageCoords});
   };
 
   handleCancel = () => {
-    this.setState({inputEnabled:!this.state.inputEnabled,areaCoords:this.state.originalAreaCoords});
+    this.setState({inputEnabled:!this.state.inputEnabled,imageCoords:this.state.originalImageCoords});
     window.currentAnnotationEditionId = null;
   };
 
@@ -48,21 +59,32 @@ export default class Image extends Component {
 
   render() {
 
-    var x1 = 0;
-    var y1 = 0;
-    var x2 = 0;
-    var y2 = 0;
+    var imageElements = [];
 
-    if(this.state.areaCoords && this.state.areaCoords !==null){
-      var splitCoords = this.state.areaCoords.split(",");
+    this.props.imageCoords && this.props.imageCoords.forEach((i)=>{
+
+      var splitCoords = i.areaCoords.split(",");
+      var x1 = 0;
+      var y1 = 0;
+      var x2 = 0;
+      var y2 = 0;
+
       x1 = splitCoords[0];
       y1 = splitCoords[1];
       x2 = splitCoords[2];
       y2 = splitCoords[3];
-    }
 
       var width = x2 - x1;
       var height = y2 - y1;
+
+      imageElements.push(
+          <div style={{overflow:"hidden",width:width,height:height}}>
+            <img alt={"image"+i.image_id} style={{margin:"-"+y1+"px 0px 0px -"+x1+"px"}} src={"data:image/png;base64,"+localStorage.getItem("image"+i.image_id)} />
+          </div>
+        );
+
+      });
+    
 
     return (
        
@@ -83,12 +105,14 @@ export default class Image extends Component {
                   </IconButton>
                 </span>
             }
-          {(this.state.areaCoords && this.state.areaCoords !==null)?
-          <div style={{overflow:"hidden",width:width,height:height}}>
-            <img alt={"image"+this.props.imageId} style={{margin:"-"+y1+"px 0px 0px -"+x1+"px"}} src={"data:image/png;base64,"+localStorage.getItem("image"+this.props.imageId)} />
-          </div>
-          :<div></div>
-        }
+            <div>{imageElements}</div>
+            {(imageElements.length > 0)?
+                <IconButton color="primary" aria-label="Edit" onClick={this.handleEditImageAddition}>
+                    <AddIcon />
+                </IconButton>
+                :
+                <span></span>
+            }
         
       </Container>
 

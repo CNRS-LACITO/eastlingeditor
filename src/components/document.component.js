@@ -1,12 +1,13 @@
 import React, { Component } from "react";
 import AuthService from "../services/auth.service";
 import DocumentService from "../services/document.service";
-import { Container, AppBar, Tabs, Tab, Typography, Box } from '@material-ui/core';
+import { Container, Grid, AppBar, Tabs, Tab, Typography, Box } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import DocumentDescription from "./document.description.component";
 import DocumentResources from "./document.resources.component";
 import DocumentAnnotations from "./document.annotations.component";
 import DocumentPreview from "./document.preview.component";
+import DocumentExport from "./document.export.component";
 import { withRouter } from 'react-router-dom';
 
 var displayOptions = {};
@@ -76,8 +77,14 @@ class Document extends Component {
   }
 
   refreshDocument = () => {
+    var oai_primary = this.getUrlParameter("oai_primary");
+    var oai_secondary = this.getUrlParameter("oai_secondary");
+
+    if(oai_primary && oai_secondary) alert('cocoon');
+
     var tabId = parseInt(this.getUrlParameter("tab"));
     var expanded = this.getUrlParameter("expanded");
+    var activeAnnotationId = this.getUrlParameter("annotation");
 
     this.setState({loading:true});
 
@@ -105,7 +112,8 @@ class Document extends Component {
               typeOf:typeOf,
               loading:false,
               value:tabId,
-              expanded:(expanded==='true')
+              expanded:(expanded==='true'),
+              activeAnnotationId:activeAnnotationId
             });
 
           }
@@ -149,6 +157,12 @@ class Document extends Component {
     this.refreshDocument();
   }
 
+  openAnnotation = (id) => {
+      this.setState({
+        value:2,
+        activeAnnotationId:id
+      }, function() {this.buildUrl();});
+    }
   
   render() {
 
@@ -177,6 +191,7 @@ class Document extends Component {
       this.setState({value:newValue}, function() {this.buildUrl();});
     };
 
+
     function a11yProps(index) {
       return {
         id: `simple-tab-${index}`,
@@ -187,7 +202,7 @@ class Document extends Component {
     return (
       
       <Container>
-        {this.state.loading && <CircularProgress />}
+        {this.state.loading && <Grid container><Grid item xs={12} style={{textAlign:"center",minHeight:"200px"}} /><Grid item xs={12} style={{textAlign:"center"}}><CircularProgress /></Grid></Grid>}
           {!this.state.loading && <AppBar position="static">
             <Tabs value={this.state.value} onChange={handleChangeTab} aria-label="tabs">
               <Tab label="Description" {...a11yProps(0)} />
@@ -220,6 +235,7 @@ class Document extends Component {
               available_lang={this.state.currentDocument.available_lang}
               refreshDocumentAnnotations={this.refreshDocumentAnnotations}
               expanded={this.state.expanded}
+              activeAnnotationId={this.state.activeAnnotationId}
             />
           </TabPanel>
           <TabPanel value={this.state.value} index={3}>
@@ -231,10 +247,15 @@ class Document extends Component {
               annotations={this.state.currentDocument.annotations}
               typeOf={this.state.currentDocument.typeOf}
               displayOptions={displayOptions}
+              openAnnotation={this.openAnnotation}
             />
           </TabPanel>
           <TabPanel value={this.state.value} index={4}>
-            Export
+            <DocumentExport
+              documentId={this.state.currentDocument.id}
+              annotations={this.state.currentDocument.annotations}
+              documentExportTitle={'eastling-'+this.state.currentDocument.lang+'_'+this.state.currentDocument.type+'-'+this.state.currentDocument.id}
+             />
           </TabPanel>
       </Container>
     

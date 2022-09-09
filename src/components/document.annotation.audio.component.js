@@ -111,6 +111,17 @@ class Audio extends Component {
         });
   }
 
+  componentDidUpdate(prevProps){
+
+    if(prevProps.annotationId !== this.props.annotationId)
+      this.setState({
+        originalStart:this.props.audioStart,
+        originalEnd:this.props.audioEnd,
+        start:this.props.audioStart,
+        end:this.props.audioEnd
+      });
+  }
+
   render() {
 
        window.wavesurfer.regions.list[this.props.annotationId] && window.wavesurfer.regions.list[this.props.annotationId].remove();

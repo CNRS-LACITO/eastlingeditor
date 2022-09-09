@@ -69,3 +69,20 @@ region.wavesurfer-region[data-region-highlight] {
 .MuiAccordion-root.blockW .MuiAvatar-root{
   background-color: #326464 !important;
 }
+
+.note .circle, .note.circle{
+  display: inline-block;
+  font-size: 10px !important;
+  vertical-align: top;
+  padding-right: 0.5em;
+}
+
+.notesBlock .note{
+  color: #222 !important;
+  font-size: 0.875rem !important;
+}
+
+.infoBadge{
+  cursor: help;
+}
+

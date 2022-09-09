@@ -72,7 +72,7 @@ class DocumentResources extends Component {
     var type = 'AUDIO';
 
     if(document.getElementById('resourceFile').files[0].type === 'video/mp4') type='VIDEO';
-    if(document.getElementById('resourceFile').files[0].type === 'audio/mpeg') type='AUDIO';
+    if(document.getElementById('resourceFile').files[0].type === 'audio/mpeg' || document.getElementById('resourceFile').files[0].type === 'audio/wav') type='AUDIO';
     if(document.getElementById('resourceFile').files[0].type === 'image/jpeg' || document.getElementById('resourceFile').files[0].type === 'image/png') type='IMAGE';
 
     
@@ -89,6 +89,7 @@ class DocumentResources extends Component {
           },
           error => {
             if(error.response.status===401) this.props.history.push('/login');
+            console.log(error.response);
             const resMessage =
               (error.response &&
                 error.response.data &&
@@ -299,7 +300,7 @@ class DocumentResources extends Component {
 
             return(
             <div>
-              <IconButton color="primary" aria-label="Delete resource" onClick={onClick} >
+              <IconButton color="primary" title="Delete resource" aria-label="Delete resource" onClick={onClick} >
                 <DeleteIcon />
               </IconButton>
             </div>
@@ -317,7 +318,7 @@ class DocumentResources extends Component {
           </header>
           <div>
             <div style={{ height: 300, width: '80%' }}>
-              <IconButton color="primary" aria-label="Add document" onClick={this.handleOpenAddDialog}>
+              <IconButton color="primary" title="Add a resource" aria-label="Add a resource" onClick={this.handleOpenAddDialog}>
                   <AddIcon />
               </IconButton>
               <DataGrid
@@ -343,10 +344,10 @@ class DocumentResources extends Component {
                     type="file"
                     aria-describedby="standard-weight-helper-text"
                     inputProps={{
-                      accept: 'image/png, image/jpeg, audio/mpeg, video/mp4',
+                      accept: 'image/png, image/jpeg, audio/wav, audio/mpeg, video/mp4',
                     }}
                   />
-                  <FormHelperText id="standard-weight-helper-text">Accepted formats : JPG, PNG, MP3, MP4</FormHelperText>
+                  <FormHelperText id="standard-weight-helper-text">Accepted formats : JPG, PNG, WAV, MP3, MP4</FormHelperText>
                 </FormControl>
                 <FormControl>
                   <TextField
@@ -384,7 +385,7 @@ class DocumentResources extends Component {
                 Cancel
               </Button>
               {!this.state.loading && <Button onClick={this.handleDeleteResource} color="primary">
-                Delete annotation
+                Delete resource
               </Button>
               }
               {this.state.loading && <CircularProgress />}
