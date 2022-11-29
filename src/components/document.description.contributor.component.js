@@ -57,7 +57,8 @@ class Contributor extends Component {
           avatar={<Avatar>{this.props.contributor.type.charAt(0).toUpperCase()}</Avatar>}
           label={this.props.contributor.firstName + " " + this.props.contributor.lastName} 
           onDelete={this.handleDelete}
-          color="secondary"
+          color="primary"
+          variant="outlined"
         />
     );
   }

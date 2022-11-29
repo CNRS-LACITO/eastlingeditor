@@ -17,6 +17,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import DocumentService from "../services/document.service";
 import ContributorService from "../services/contributor.service";
 import TitleService from "../services/title.service";
+import HelperService from "../services/helper.service";
 import { withRouter } from 'react-router-dom';
 
 class DocumentDescription extends Component {
@@ -33,7 +34,8 @@ class DocumentDescription extends Component {
       lang:props.document.lang,
       available_lang:props.document.available_lang,
       available_kindOf:props.document.available_kindOf,
-      document:props.document
+      document:props.document,
+      langISOCodes:[]
     };
   }
 
@@ -55,6 +57,8 @@ class DocumentDescription extends Component {
             contributors:response.data,
             openNewContributor:false
           });
+
+          this.props.refreshDocumentMetadata("contributors",response.data);
 
         },
         error => {
@@ -89,6 +93,8 @@ class DocumentDescription extends Component {
             titles:response.data,
             openNewTitle:false
           });
+
+          this.props.refreshDocumentMetadata("titles",response.data);
 
         },
         error => {
@@ -149,6 +155,8 @@ class DocumentDescription extends Component {
       loading:true
     });
 
+    this.props.refreshDocumentMetadata(e.target.id,e.target.value);
+
     DocumentService.update(this.props.document.id,{[e.target.id]:e.target.value}).then(
       (response) => {
           this.setState({
@@ -179,6 +187,37 @@ class DocumentDescription extends Component {
     });
   }
 
+  onCorpusChange = (e) => {
+
+    (e!=null) && (e.target.value.length >=2) && (e.target.value.length <=3) && HelperService.getLangISOCodes(e.target.value).then(
+      (response) => {
+
+          this.setState({
+            langISOCodes:response.data
+          });
+
+        },
+        error => {
+          this.setState({
+            loading:false
+          });
+
+          console.log(error);
+
+          //if(error.response.status===401) this.props.history.push('/login');
+
+          const resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+
+          if(error.response.status!==404) alert(resMessage);
+        });
+
+  }
+
   openNewContributorForm = () => {
     this.setState({openNewContributor:!this.state.openNewContributor});
   }
@@ -197,6 +236,7 @@ class DocumentDescription extends Component {
 
 
   render() {
+
     var titles = [];
     var contributors = [];
     var available_lang = [];
@@ -245,10 +285,6 @@ class DocumentDescription extends Component {
       });
     }
       
-    var top100Films = [
-    {title:"Shaw brothers"},
-    {title:"Tarantino"},
-    ];
 
     return(
 
@@ -258,22 +294,17 @@ class DocumentDescription extends Component {
         
          <div>
             <Autocomplete
-              id="free-solo-demo"
-              freeSolo
-              options={top100Films.map((option) => option.title)}
+              id="lang"
+              freeSolo="true"
+              options={this.state.langISOCodes.map((lang) => lang.code_langue_sujet + " / "+ lang.sujet)}
+              onInputChange={this.onCorpusChange}
+              onChange={this.onChange}
+              defaultValue={this.props.document.lang}
               renderInput={(params) => (
-                <TextField {...params} label="freeSolo" margin="normal" variant="outlined" />
+                <TextField {...params} label="Corpus" margin="normal" variant="outlined" onBlur={this.onBlur}/>
               )}
             />
-            <TextField
-                id="lang"
-                label="Corpus"
-                placeholder="Title, ISO 639-2 language code"
-                helperText="use format 'Title, ISO 639-2 language code'"
-                value={this.state.lang}
-                onChange={this.onChange}
-                onBlur={this.onBlur}
-              />
+
           </div>
           <div>
             <Typography component="h3">Recording</Typography>

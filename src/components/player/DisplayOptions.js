@@ -153,7 +153,7 @@ class DisplayOptions extends React.Component {
             <FormControlLabel 
               key={"continuousPlay"} 
               labelPlacement="start"
-              control={<Checkbox checked={this.state.continuousPlay===true} onChange={this.handleCheck.bind(this)} name="continuousPlay" />}
+              control={<Checkbox color="primary" checked={this.state.continuousPlay===true} onChange={this.handleCheck.bind(this)} name="continuousPlay" />}
               label={<Translate text='Continuous play'/>}
             />
           </div>
@@ -168,7 +168,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.text.transcriptions.map(transc => (
             <FormControlLabel key={"textTranscription"+transc}
-              control={<Checkbox checked={this.state.textTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"text-"+transc} />}
+              control={<Checkbox color="primary" checked={this.state.textTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"text-"+transc} />}
               label={transc}
             />
           ))}
@@ -180,7 +180,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.text.translations.map(transl => (
             <FormControlLabel key={"textTranslation"+transl}
-              control={<Checkbox checked={this.state.textTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"text-"+transl} />}
+              control={<Checkbox color="primary" checked={this.state.textTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"text-"+transl} />}
               label={transl}
             />
           ))}
@@ -192,7 +192,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.sentence.transcriptions.map(transc => (
             <FormControlLabel key={"sentenceTranscription"+transc}
-              control={<Checkbox checked={this.state.sentenceTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"sentence-"+transc} />}
+              control={<Checkbox color="primary" checked={this.state.sentenceTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"sentence-"+transc} />}
               label={transc}
             />
           ))}
@@ -204,7 +204,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.sentence.translations.map(transl => (
             <FormControlLabel key={"textTranslation"+transl}
-              control={<Checkbox checked={this.state.sentenceTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"sentence-"+transl} />}
+              control={<Checkbox color="primary" checked={this.state.sentenceTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"sentence-"+transl} />}
               label={transl}
             />
           ))}
@@ -216,7 +216,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.word.transcriptions.map(transc => (
             <FormControlLabel key={"wordTranscription"+transc}
-              control={<Checkbox checked={this.state.wordTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"word-"+transc} />}
+              control={<Checkbox color="primary" checked={this.state.wordTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"word-"+transc} />}
               label={transc}
             />
           ))}
@@ -228,7 +228,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.word.translations.map(transl => (
             <FormControlLabel key={"wordTranslation"+transl}
-              control={<Checkbox checked={this.state.wordTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"word-"+transl} />}
+              control={<Checkbox color="primary" checked={this.state.wordTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"word-"+transl} />}
               label={transl}
             />
           ))}
@@ -240,7 +240,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.morpheme.transcriptions.map(transc => (
             <FormControlLabel key={"morphemeTranscription"+transc}
-              control={<Checkbox checked={this.state.morphemeTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"morpheme-"+transc} />}
+              control={<Checkbox color="primary" checked={this.state.morphemeTranscriptions.includes(transc)} onChange={this.handleTranscriptionOptions.bind(this)} name={"morpheme-"+transc} />}
               label={transc}
             />
           ))}
@@ -252,7 +252,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
           {this.props.options.morpheme.translations.map(transl => (
             <FormControlLabel key={"morphemeTranslation"+transl}
-              control={<Checkbox checked={this.state.morphemeTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"morpheme-"+transl} />}
+              control={<Checkbox color="primary" checked={this.state.morphemeTranslations.includes(transl)} onChange={this.handleTranslationOptions.bind(this)} name={"morpheme-"+transl} />}
               label={transl}
             />
           ))}
@@ -264,7 +264,7 @@ class DisplayOptions extends React.Component {
           <FormGroup>
             {this.props.options.note.translations.map(nl => (
               <FormControlLabel key={"note"+nl}
-                control={<Checkbox checked={this.state.displayNotes.includes(nl)} onChange={this.handleNotesOptions.bind(this)} name={nl} />}
+                control={<Checkbox color="primary" checked={this.state.displayNotes.includes(nl)} onChange={this.handleNotesOptions.bind(this)} name={nl} />}
                 label={nl}
               />
             ))}

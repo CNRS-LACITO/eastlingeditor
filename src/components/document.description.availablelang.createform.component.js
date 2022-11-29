@@ -82,8 +82,8 @@ class AvailableLanguageCreateForm extends Component {
 
         <TextField
           id="lang"
-          label="ISO 639‑1 Code"
-          placeholder="ISO 639‑1 Code"
+          label={(this.props.type === "lang")?"ISO 639‑1 Code":"Kind of transcription"}
+          placeholder={(this.props.type === "lang")?"ISO 639‑1 Code":"Kind of transcription"}
           size="medium"
           value={this.state.lang}
           onChange={this.onChange}

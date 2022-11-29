@@ -54,10 +54,13 @@ class Sentence extends React.Component {
 	//DOI PopUp
 
 	const showDoi = (event) => {
-	    this.setState({ anchorEl: this.state.anchorEl ? null : event.currentTarget});
+	    this.setState({
+	    	anchorEl: this.state.anchorEl ? null : event.currentTarget
+	    });
 	  };
+
 	const open = Boolean(this.state.anchorEl);
-    const popperId = open ? 'simple-popper' : undefined;
+  const popperId = open ? 'simple-popper' : undefined;
     /////////
 
 	// Get translation(s) of the sentence
@@ -284,7 +287,7 @@ class Sentence extends React.Component {
 	        <div style={{textAlign:"initial"}} className="annotationsBlock">
 
 	        	<Avatar aria-label="sentenceId" style={avatarStyle}>
-		            <Link to={`${path}?tab=2&annotation=${this.props.s.realId}`} onClick={() => this.props.openAnnotation(this.props.s.realId)}>{this.props.s.id}</Link>
+		            <Link to={`${path}?tab=2&annotationId=${this.props.s.realId}`} onClick={() => this.props.openAnnotation(this.props.s.realId)}>{this.props.s.id}</Link>
 		          </Avatar>
 				<IconButton aria-describedby={popperId} onClick={showDoi} id={"btn_doi_"+this.props.s.id}><img className="doi" src="/dist/images/DOI_logo.svg" alt="doi" /></IconButton>
 	        	<Popper id={"doi_"+this.props.s.id} open={open} anchorEl={this.state.anchorEl} test={document.getElementById("btn_doi_"+this.props.s.id)}>

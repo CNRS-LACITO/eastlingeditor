@@ -311,11 +311,7 @@ class DocumentResources extends Component {
       
     return(
     <Container>
-          <header className="jumbotron">
-            <h3>
-             Resources
-            </h3>
-          </header>
+
           <div>
             <div style={{ height: 300, width: '80%' }}>
               <IconButton color="primary" title="Add a resource" aria-label="Add a resource" onClick={this.handleOpenAddDialog}>

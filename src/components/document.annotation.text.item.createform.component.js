@@ -49,13 +49,15 @@ class TextItemCreateForm extends Component {
     this.props.type==='form' && FormService.create(this.state.lang,this.state.text,this.props.parentId).then(
       (response) => {
           this.setState({
-            loading:false
+            loading:false,
+            text:""
           });
           this.props.refresh('form');
         },
         error => {
           this.setState({
-            loading:false
+            loading:false,
+            text:""
           });
 
           if(error.response.status===401) this.props.history.push('/login');
@@ -73,14 +75,16 @@ class TextItemCreateForm extends Component {
     this.props.type==='translation' && TranslationService.create(this.state.lang,this.state.text,this.props.parentId).then(
       (response) => {
           this.setState({
-            loading:false
+            loading:false,
+            text:""
           });
           this.props.refresh('translation');
         },
         error => {
           this.setState({
             inputEnabled:true,
-            loading:false
+            loading:false,
+            text:""
           });
 
           if(error.response.status===401) this.props.history.push('/login');
@@ -157,6 +161,7 @@ class TextItemCreateForm extends Component {
                 rowsMax={4}
                 value={this.state.text}
                 onChange={this.onTextChange}
+                onMouseDown={(e) => {e.stopPropagation()}}
               />
                 {
                   this.state.loading ? <CircularProgress size="1.5rem" /> :

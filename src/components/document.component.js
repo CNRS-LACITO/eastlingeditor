@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import AuthService from "../services/auth.service";
 import DocumentService from "../services/document.service";
-import { Container, Grid, AppBar, Tabs, Tab, Typography, Box } from '@material-ui/core';
+import { Container, Grid, AppBar, Tabs, Tab, Typography, Box, Breadcrumbs, Link } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import DocumentDescription from "./document.description.component";
 import DocumentResources from "./document.resources.component";
@@ -37,8 +37,11 @@ class Document extends Component {
       currentDocument: {},
       value:0,
       loading: true,
-      expanded:false
-    }
+      expanded:false,
+      title:""
+    };
+
+    window.imagesMap = [];
   }
 
   getUrlParameter (sVar) {
@@ -84,7 +87,7 @@ class Document extends Component {
 
     var tabId = parseInt(this.getUrlParameter("tab"));
     var expanded = this.getUrlParameter("expanded");
-    var activeAnnotationId = this.getUrlParameter("annotation");
+    //var activeAnnotationId = this.getUrlParameter("annotationId");
 
     this.setState({loading:true});
 
@@ -107,13 +110,24 @@ class Document extends Component {
 
             response.typeOf = typeOf;
 
+            response.images.forEach(function(image,index){
+                //window.imagesMap["image"+image.id] = image["TO_BASE64(content)"];
+                window.imagesMap.push({
+                  id:image.id,
+                  content:image["TO_BASE64(content)"],
+                  filename:image.rank+'_'+image.filename
+                });
+
+            });
+
             this.setState({
               currentDocument:response,
               typeOf:typeOf,
               loading:false,
               value:tabId,
               expanded:(expanded==='true'),
-              activeAnnotationId:activeAnnotationId
+              //activeAnnotationId:activeAnnotationId,
+              title:response.titles[0]!==undefined?response.titles[0].title:""
             });
 
           }
@@ -132,25 +146,56 @@ class Document extends Component {
       );
   }
 
-  refreshDocumentAnnotations = (annotations) => {
+  refreshDocumentAnnotations = () => {
+
+    this.setState({
+      loading:true
+    });
+
+
+    DocumentService.getAnnotations(this.props.match.params.docId).then(
+      response => {
+        var currentDocument = this.state.currentDocument;
+        var typeOf = {};
+        typeOf.text = {}; typeOf.text.transcriptions = []; typeOf.text.translations = [];
+        typeOf.sentence = {}; typeOf.sentence.transcriptions = []; typeOf.sentence.translations = [];
+        typeOf.word = {}; typeOf.word.transcriptions = []; typeOf.word.translations = [];
+        typeOf.morpheme = {}; typeOf.morpheme.transcriptions = []; typeOf.morpheme.translations = [];
+        typeOf.note = {}; typeOf.note.translations = [];
+
+        currentDocument.annotations = response.data.annotations;
+
+        this.parseTypeOf(response.data.annotations[0],typeOf);
+        currentDocument.typeOf = typeOf;
+
+        this.setState({
+          currentDocument: currentDocument,
+          loading:false
+        });
+
+      },
+      error => {
+        if(error.response.status===401) this.props.history.push('/login');
+        this.setState({
+          currentDocument:
+            (error.response && error.response.data) ||
+            error.message ||
+            error.toString(),
+            loading:false
+        });
+      }
+    );
+
+  }
+
+  refreshDocumentMetadata = (key,value) => {
     var currentDocument = this.state.currentDocument;
-    currentDocument.annotations = annotations;
 
-    var typeOf = {};
-    typeOf.text = {}; typeOf.text.transcriptions = []; typeOf.text.translations = [];
-    typeOf.sentence = {}; typeOf.sentence.transcriptions = []; typeOf.sentence.translations = [];
-    typeOf.word = {}; typeOf.word.transcriptions = []; typeOf.word.translations = [];
-    typeOf.morpheme = {}; typeOf.morpheme.transcriptions = []; typeOf.morpheme.translations = [];
-    typeOf.note = {}; typeOf.note.translations = [];
-
-    this.parseTypeOf(annotations[0],typeOf);
-
-    currentDocument.typeOf = typeOf;
+    currentDocument[key] = value;
 
     this.setState({
       currentDocument: currentDocument
     });
-
   }
 
   componentDidMount() {
@@ -160,9 +205,10 @@ class Document extends Component {
   openAnnotation = (id) => {
       this.setState({
         value:2,
-        activeAnnotationId:id
+        //activeAnnotationId:id
       }, function() {this.buildUrl();});
     }
+
   
   render() {
 
@@ -191,6 +237,10 @@ class Document extends Component {
       this.setState({value:newValue}, function() {this.buildUrl();});
     };
 
+    const handleClick = (e) => {
+      console.log(e);
+    }
+
 
     function a11yProps(index) {
       return {
@@ -202,9 +252,27 @@ class Document extends Component {
     return (
       
       <Container>
+
+        <Breadcrumbs aria-label="breadcrumb" style={{fontSize:"0.875rem",margin:"20px"}}>
+          <Link color="primary" href="/editor" onClick={handleClick}>
+            Accueil
+          </Link>
+          <Link color="primary" href="/editor/documents/" onClick={handleClick}>
+            Mes documents
+          </Link>
+          <a color="default">{this.state.title}</a>
+        </Breadcrumbs>
+
         {this.state.loading && <Grid container><Grid item xs={12} style={{textAlign:"center",minHeight:"200px"}} /><Grid item xs={12} style={{textAlign:"center"}}><CircularProgress /></Grid></Grid>}
-          {!this.state.loading && <AppBar position="static">
-            <Tabs value={this.state.value} onChange={handleChangeTab} aria-label="tabs">
+          {!this.state.loading && <AppBar color="default" position="static">
+            <Tabs 
+              centered 
+              indicatorColor="primary"
+              textColor="primary"
+              value={this.state.value}
+              onChange={handleChangeTab}
+              aria-label="tabs"
+            >
               <Tab label="Description" {...a11yProps(0)} />
               <Tab label="Resources" {...a11yProps(1)} />
               <Tab label="Annotations" {...a11yProps(2)} />
@@ -214,7 +282,8 @@ class Document extends Component {
           </AppBar>}
           {!this.state.loading && <TabPanel value={this.state.value} index={0}>
             <DocumentDescription 
-              document={this.state.currentDocument} 
+              document={this.state.currentDocument}
+              refreshDocumentMetadata={this.refreshDocumentMetadata}
             />
           </TabPanel>}
           <TabPanel value={this.state.value} index={1}>
@@ -235,7 +304,7 @@ class Document extends Component {
               available_lang={this.state.currentDocument.available_lang}
               refreshDocumentAnnotations={this.refreshDocumentAnnotations}
               expanded={this.state.expanded}
-              activeAnnotationId={this.state.activeAnnotationId}
+              /*activeAnnotationId={this.state.activeAnnotationId}*/
             />
           </TabPanel>
           <TabPanel value={this.state.value} index={3}>
@@ -254,6 +323,7 @@ class Document extends Component {
             <DocumentExport
               documentId={this.state.currentDocument.id}
               annotations={this.state.currentDocument.annotations}
+              recording={this.state.currentDocument.recording}
               documentExportTitle={'eastling-'+this.state.currentDocument.lang+'_'+this.state.currentDocument.type+'-'+this.state.currentDocument.id}
              />
           </TabPanel>

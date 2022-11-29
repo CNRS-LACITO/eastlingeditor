@@ -26,7 +26,7 @@ export default class Image extends Component {
   }
 
   handleEdit = () => {
-    this.setState({inputEnabled:!this.state.inputEnabled});
+    //this.setState({inputEnabled:!this.state.inputEnabled});
     window.currentAnnotationEdition = {};
     window.currentAnnotationEdition.annotationId = this.props.annotationId;
     window.currentAnnotationEdition.annotationLabel = this.props.annotationLabel;
@@ -36,7 +36,7 @@ export default class Image extends Component {
   };
 
   handleEditImageAddition = () => {
-    this.setState({inputEnabled:!this.state.inputEnabled});
+    //this.setState({inputEnabled:!this.state.inputEnabled});
     window.currentAnnotationEdition = {};
     window.currentAnnotationEdition.annotationId = this.props.annotationId;
     window.currentAnnotationEdition.annotationLabel = this.props.annotationLabel;
@@ -45,17 +45,12 @@ export default class Image extends Component {
     this.props.handleEditionState(true,"image",{annotationLabel:this.props.annotationLabel,annotationId:this.props.annotationId,imageCoords:this.state.imageCoords});
   };
 
+/*no need
   handleCancel = () => {
     this.setState({inputEnabled:!this.state.inputEnabled,imageCoords:this.state.originalImageCoords});
     window.currentAnnotationEditionId = null;
   };
-
-  handleSubmit = () => {
-    this.setState({
-      loading:true,
-      inputEnabled:false
-    });
-  }
+*/
 
   render() {
 
@@ -68,18 +63,53 @@ export default class Image extends Component {
       var y1 = 0;
       var x2 = 0;
       var y2 = 0;
+      var ratio = 1;
 
+      ratio = 1/splitCoords[4];
       x1 = splitCoords[0];
       y1 = splitCoords[1];
       x2 = splitCoords[2];
       y2 = splitCoords[3];
-
+      
+/*
       var width = x2 - x1;
       var height = y2 - y1;
+*/
+      var width = (splitCoords[2] - splitCoords[0]);
+      var height = (splitCoords[3] - splitCoords[1]);
+
+      //const img = new Image(); //BUG conflit nom de classe courante avec javascript
+      var img = document.createElement('img');
+      img.src = "data:image/png;base64,"+window.imagesMap.filter((image)=>image.id === i.image_id)[0].content;
+
+      var cssBGPosition = '-' + splitCoords[0] + 'px -' + splitCoords[1] + 'px';  
+
+      const imgStyle = {
+        'background-position': cssBGPosition,
+        'width': width + 'px',
+        'height': height + 'px',
+        'padding': '0px',
+        'border': '0px',
+        'object-fit': 'none',
+        'object-position':cssBGPosition,
+        'max-width' : 'inherit !important',
+        'transform': 'scale('+ratio+')',
+        'transform-origin': 'left top',
+      };
 
       imageElements.push(
-          <div style={{overflow:"hidden",width:width,height:height}}>
-            <img alt={"image"+i.image_id} style={{margin:"-"+y1+"px 0px 0px -"+x1+"px"}} src={"data:image/png;base64,"+localStorage.getItem("image"+i.image_id)} />
+          //<div style={{position:'relative',textAlign:'initial'}}>
+          //<div style={{overflow:"hidden",width:width,height:height}}>
+          <div>
+            <img 
+              alt={"image"+i.image_id}
+              //style={{margin:"-"+y1+"px 0px 0px -"+x1+"px",maxWidth:width}}
+              style={imgStyle} 
+              width={width} 
+              height={height} 
+              /*src={image.src}*/
+              src={"data:image/png;base64,"+window.imagesMap.filter((image)=>image.id === i.image_id)[0].content}
+            />
           </div>
         );
 
@@ -91,20 +121,9 @@ export default class Image extends Component {
       <Container>
         {this.state.loading && <CircularProgress size="1.5rem" />}
         <Chip label="image" size="small" />
-            {!this.state.inputEnabled?
                 <IconButton color="primary" aria-label="Edit" onClick={this.handleEdit}>
                     <EditIcon />
                 </IconButton>
-                :
-                <span>
-                  <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit}>
-                      <SaveIcon />
-                  </IconButton>
-                  <IconButton color="primary" aria-label="Cancel" onClick={this.handleCancel}>
-                      <CancelIcon />
-                  </IconButton>
-                </span>
-            }
             <div>{imageElements}</div>
             {(imageElements.length > 0)?
                 <IconButton color="primary" aria-label="Edit" onClick={this.handleEditImageAddition}>

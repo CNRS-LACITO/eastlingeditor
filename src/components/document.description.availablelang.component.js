@@ -64,7 +64,8 @@ class AvailableLanguage extends Component {
         <Chip
           label={this.props.lang} 
           onDelete={this.handleDelete}
-          color="secondary"
+          color="primary"
+          variant="outlined"
         />
     );
   }

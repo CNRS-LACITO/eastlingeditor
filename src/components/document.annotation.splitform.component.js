@@ -16,7 +16,7 @@ class SplitForm extends Component {
   constructor(props){
     super(props);
     this.state = {
-      nbWords:this.props.nbWords,
+      nbSegments:this.props.nbSegments,
       loading:false,
       verticalImageSplit:false
     };
@@ -24,7 +24,7 @@ class SplitForm extends Component {
   }
 
   onTextChange = (event) => {
-    this.setState({nbWords:event.target.value});
+    this.setState({nbSegments:event.target.value});
   }
 
   componentDidMount(){
@@ -44,8 +44,13 @@ class SplitForm extends Component {
       inputEnabled:false
     });
 
+    var types = [];
+    types['T']='S';types['S']='W';types['W']='M';
+    var separators = [];
+    separators['S']=' ';
+    separators['W']='-';
 
-    const splittedForm = this.props.formToSplit.split(' ');
+    const splittedForm = this.props.formToSplit.split(separators[this.props.parentType]);
     var audioStep = 0;
     var imageStep = 0;
     var imageWidth = 0;
@@ -59,7 +64,7 @@ class SplitForm extends Component {
 
     if(this.props.audioStart && this.props.audioEnd && (this.props.audioEnd - this.props.audioStart) > 0){
 
-      audioStep = (this.props.audioEnd - this.props.audioStart) / this.state.nbWords;
+      audioStep = (this.props.audioEnd - this.props.audioStart) / this.state.nbSegments;
 
     }
 
@@ -83,7 +88,7 @@ class SplitForm extends Component {
         }
       });
 
-      imageStep = (this.state.verticalImageSplit)?(imageHeight / this.state.nbWords):(imageWidth / this.state.nbWords);
+      imageStep = (this.state.verticalImageSplit)?(imageHeight / this.state.nbSegments):(imageWidth / this.state.nbSegments);
     
     }
 
@@ -93,50 +98,56 @@ class SplitForm extends Component {
     //var splittedFormTimeKey = [];
     //var splittedFormImageKey = [];
 
-    for(var k = 0; k < this.state.nbWords ;k++){
-
-      imageToSplit = (isOnFirstImage)?this.props.imageCoords[0]:this.props.imageCoords[1];
-      var imageCoords = imageToSplit.areaCoords.split(',');
-
-      var audioSplitStart = ((k * audioStep) + audioPadding) + parseFloat(this.props.audioStart);
-      var audioSplitEnd = (((k+1) * audioStep) - audioPadding) + parseFloat(this.props.audioStart);
-      var x1 = ((k-j) * imageStep) + imagePadding + parseFloat(imageCoords[0]);
-      var x2 = ((k-j+1) * imageStep) - imagePadding + parseFloat(imageCoords[0]);
+    for(var k = 0; k < this.state.nbSegments ;k++){
 
       var splittedCoords = "";
+      var audioSplitStart = 0;
+      var audioSplitEnd = 0;
 
-      if(this.state.verticalImageSplit){
+      if(this.props.imageCoords.length > 0){
 
-        if(x1 > imageCoords[3]){
-          j = k;
-          isOnFirstImage = false;
+        imageToSplit = (isOnFirstImage)?this.props.imageCoords[0]:this.props.imageCoords[1];
+        var imageCoords = imageToSplit.areaCoords.split(',');
+        var x1 = ((k-j) * imageStep) + imagePadding + parseFloat(imageCoords[0]);
+        var x2 = ((k-j+1) * imageStep) - imagePadding + parseFloat(imageCoords[0]);
+
+        if(this.state.verticalImageSplit){
+
+          if(x1 > imageCoords[3]){
+            j = k;
+            isOnFirstImage = false;
+          }
+
+          var y1 = x1;
+          var y2 = x2;
+
+          splittedCoords = (parseFloat(imageCoords[0])+imagePadding)+","+y1+","+(parseFloat(imageCoords[2])-imagePadding)+","+y2+","+imageCoords[4];
+
+        }else{
+
+          if(x1 > imageCoords[2]){
+            j = k;
+            isOnFirstImage = false;
+          }
+
+          splittedCoords = x1+","+(parseFloat(imageCoords[1])+imagePadding)+","+x2+","+(parseFloat(imageCoords[3])-imagePadding)+","+imageCoords[4];
+
         }
-
-        var y1 = x1;
-        var y2 = x2;
-
-        splittedCoords = (parseFloat(imageCoords[0])+imagePadding)+","+y1+","+(parseFloat(imageCoords[2])-imagePadding)+","+y2+","+imageCoords[4];
-
-      }else{
-
-        if(x1 > imageCoords[2]){
-          j = k;
-          isOnFirstImage = false;
-        }
-
-        splittedCoords = x1+","+(parseFloat(imageCoords[1])+imagePadding)+","+x2+","+(parseFloat(imageCoords[3])-imagePadding)+","+imageCoords[4];
-
       }
       
-      
+      if(this.props.audioStart && this.props.audioEnd && (this.props.audioEnd - this.props.audioStart) > 0){
+        audioSplitStart = ((k * audioStep) + audioPadding) + parseFloat(this.props.audioStart);
+        audioSplitEnd = (((k+1) * audioStep) - audioPadding) + parseFloat(this.props.audioStart);
+      }
+
 
       var data={
         document_id:this.props.documentId,
-        type:"W",
+        type:types[this.props.parentType],
         rank:(k+1),
         parent_id:this.props.parentId,
         imageCoords:[{
-            "image_id":imageToSplit.image_id,
+            "image_id":(imageToSplit!==undefined)?imageToSplit.image_id:null,
             "areaCoords":splittedCoords
           }],
         audioStart:parseFloat(audioSplitStart.toFixed(2)),
@@ -146,14 +157,14 @@ class SplitForm extends Component {
       //splittedFormTimeKey[audioSplitStart.toFixed(2)] = splittedForm[k];
       //splittedFormImageKey[x1] = splittedForm[k];
 
-      var checkToCreate = this.state.nbWords;
+      var checkToCreate = this.state.nbSegments;
       var countCreated = 0;
       
       AnnotationService.create(data).then(
       (response) => {
 
           if(this.props.formToSplit.length > 0){
-            FormService.create(this.props.kindOf,splittedForm[response.data.rank-1],response.data.id).then(
+            FormService.create(this.props.kindOf,splittedForm[response.data.rank-1] || '',response.data.id).then(
               (responseFormCreate) => {
                 countCreated++;
                 if(countCreated === k){
@@ -186,11 +197,9 @@ class SplitForm extends Component {
               this.setState({
                 loading:false
               });
-              this.props.refreshAnnotations();
+              this.props.refreshAnnotations(false,this.props.parentId);
             }
           }
-
-
 
           
         },
@@ -226,9 +235,9 @@ class SplitForm extends Component {
       <Container style={{display:visibility}}>
 
               <TextField
-                label="Number of words"
-                placeholder="Number of words"
-                value={this.state.nbWords}
+                label="Number of segments"
+                placeholder="Number of segments"
+                value={this.state.nbSegments}
                 onChange={this.onTextChange}
               />
               <FormControlLabel
@@ -237,7 +246,7 @@ class SplitForm extends Component {
               />
                 {
                   this.state.loading ? <CircularProgress size="1.5rem" /> :
-                  <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit} hidden={!this.state.nbWords.length}>
+                  <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit} hidden={!this.state.nbSegments.length}>
                       <OkIcon />
                   </IconButton>
                 }

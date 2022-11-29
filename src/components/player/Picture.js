@@ -53,11 +53,12 @@ class Picture extends React.Component {
             };
 
             const imageBlock = () => {
+
               return (
                 <div style={{position:'relative',textAlign:'initial'}}>
                   <img 
                     alt={a.image} 
-                    src={"data:image/png;base64,"+localStorage[a.image]} 
+                    src={"data:image/png;base64,"+window.imagesMap.filter((image)=>image.id === parseInt(a.image.split('image')[1]))[0].content} 
                     style={imgStyle} 
                     width={image_width} 
                     height={image_scope} 

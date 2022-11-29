@@ -1,4 +1,4 @@
-/*
+ /*
 https://medium.com/trackstack/simple-audio-waveform-with-wavesurfer-js-and-react-ae6c0653b240
 https://github.com/katspaugh/window.wavesurfer.js/blob/master/example/annotation/app.js
 */
@@ -25,6 +25,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import ZoomIn from '@material-ui/icons/ZoomIn';
 import ZoomOut from '@material-ui/icons/ZoomOut';
+import OpenWithIcon from '@material-ui/icons/OpenWith';
 
 import Slider from '@material-ui/core/Slider';
 
@@ -43,32 +44,47 @@ import FormLabel from '@material-ui/core/FormLabel';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import Checkbox from '@material-ui/core/Checkbox';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import DocumentAnnotation from './document.annotation.component';
 import DocumentAnnotationsImport from './document.annotations.import.component';
+import DocumentAnnotationsTree from './document.annotations.tree.component';
 import AnnotationService from "../services/annotation.service";
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Snackbar from '@material-ui/core/Snackbar';
-import Tree from 'react-animated-tree';
+//import Tree from 'react-animated-tree';
+import Tree from "react-animated-tree-v2";
 import { withRouter } from 'react-router-dom';
+import Draggable from 'react-draggable';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 
 window.wavesurfer = null;
 
 class DocumentAnnotations extends React.Component {
 
   constructor(props){
+
+    window.annotationPanelPosition = window.annotationPanelPosition?window.annotationPanelPosition:{x:0,y:0};
+    window.hasScrolled=false;
+    window.audioSelection = {start:0,end:0};
+
     super(props);
     this.state = {
       playing: false,
-      zoom: 10,
+      currentTime:0,
+      zoom: window.zoom,
       tabValue:window.tabValue?window.tabValue:0,
       crop:null,
       annotationsPanel: false,
       annotationPanel: false,
       importPanel: false,
-      annotations: this.props.annotations,
-      change:0,
+      annotations: null,
       openEditionNotification:window.currentAnnotationEdition && window.currentAnnotationEdition!==null,
       editionNotification:"",
       editionType:"audio",
@@ -76,7 +92,6 @@ class DocumentAnnotations extends React.Component {
       audioSelection:false,
       imageSelection:false,
       openCreateDialog:false,
-      openDeleteDialog:false,
       newAnnotationType:null,
       parentAnnotations:[],
       parentAnnotationId:0,
@@ -84,16 +99,41 @@ class DocumentAnnotations extends React.Component {
       selectedAnnotation: {},
       imageCanvas:[],
       showImageCanvas:true,
+      showRegions:true,
       hasAudioSelection:false,
-      activeAnnotationId:this.props.activeAnnotationId?this.props.activeAnnotationId:0,
-      selectedTreeAnnotations:[]
+      activeAnnotationId:this.getUrlParameter('annotationId')?this.getUrlParameter('annotationId'):0,
+      speed:window.speed?window.speed:1,
+      expanded:false,
+      anchorRef: React.createRef(),
+      annotationPanelPositionX:window.annotationPanelPosition.x,
+      annotationPanelPositionY:window.annotationPanelPosition.y,
+      treeKey:Date.now()
     };
     this.previewCanvasRef = React.createRef();
+
   }
 
-  handleSliderChange = (event, newValue) => {
+  componentWillUnmount(){
+    //attention boucle infinie avec le render depuis composnat parent
+    //this.props.refreshDocumentAnnotations();
 
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    if(props.annotations !== state.annotations){
+        //Change in props
+        return{
+            annotations: props.annotations
+        };
+    }
+    return null; // No change to state
+  }
+
+
+  handleSliderZoomChange = (event, newValue) => {
+    window.zoom = newValue;
     window.wavesurfer && window.wavesurfer.zoom(newValue*10);
+
     this.setState({
       zoom:newValue,
       crop:window.crop,
@@ -102,12 +142,30 @@ class DocumentAnnotations extends React.Component {
 
   };
 
-  handleShowImageCanvas = (event) => {
+  handleSliderSpeedChange = (event, newValue) => {
+    window.speed = newValue;
+    window.wavesurfer && window.wavesurfer.setPlaybackRate(newValue);
+    this.setState({
+      speed:newValue
+    });
 
+  };
+
+  handleShowImageCanvas = (event) => {
     document.querySelectorAll('canvas.imageCanvas').forEach(e => e.style.display = (event.target.checked)?"block":"none");
-    
     this.setState({
       showImageCanvas:event.target.checked,
+    });
+
+  };
+
+  handleShowRegions = (event) => {
+
+    document.querySelectorAll('.wavesurfer-region').forEach(e => e.style.display = (event.target.checked)?"block":"none");
+    document.querySelectorAll('.wavesurfer-marker').forEach(e => e.style.display = (event.target.checked)?"flex":"none");
+    
+    this.setState({
+      showRegions:event.target.checked
     });
 
   };
@@ -133,7 +191,7 @@ class DocumentAnnotations extends React.Component {
 
   handleCloseCreateDrawer = (event) => {
     var params = new URLSearchParams(window.location.search);
-    params.delete('annotation');
+    params.delete('annotationId');
 
     var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + params.toString();
     window.history.pushState('test','',newUrl);
@@ -157,31 +215,34 @@ class DocumentAnnotations extends React.Component {
 
   handleOpenCreateDialog = (event) => {
 
-    if((window.coordinates === undefined || window.coordinates.length === 0) && !this.state.hasAudioSelection){
+    if((window.coordinates === undefined || window.coordinates.length === 0) && (isNaN(parseFloat(window.audioSelection.end)))){
       alert("No selection in audio or image");
       return;
     }
-    this.refreshParentAnnotationsList();
+    
 
     // Autoselection of the right parent annotation
     var that = this;
 
-    console.log(this.state.parentAnnotations);
-
     that.setState({
       parentAnnotationId:this.state.parentAnnotations[0].id,
       newAnnotationType:this.state.parentAnnotations[0].childrenType,
-      nextChildRank: this.state.parentAnnotations[0].nextChildRank
+      nextChildRank: this.state.parentAnnotations[0].nextChildRank,
+      parentAnnotations:this.refreshParentAnnotationsList(this.state.annotations)
     });
 
     this.state.parentAnnotations.forEach(function(p){
-      if((parseFloat(that.state.audioSelection.end) <= parseFloat(p.audioEnd) ) && (parseFloat(that.state.audioSelection.start) >= parseFloat(p.audioStart))){
-        that.setState({
-          parentAnnotationId:p.id,
-          newAnnotationType:p.childrenType,
-          nextChildRank: p.nextChildRank
-        });
-      }
+      //if((parseFloat(that.state.audioSelection.end) <= parseFloat(p.audioEnd) ) && (parseFloat(that.state.audioSelection.start) >= parseFloat(p.audioStart))){
+
+        if((parseFloat(window.audioSelection.end) <= parseFloat(p.audioEnd) ) && (parseFloat(window.audioSelection.start) >= parseFloat(p.audioStart))){
+          that.setState({
+            parentAnnotationId:p.id,
+            newAnnotationType:p.childrenType,
+            nextChildRank: p.nextChildRank
+          });
+        }
+      
+      
     });
 
     this.setState({
@@ -190,7 +251,22 @@ class DocumentAnnotations extends React.Component {
 
   };
 
+  getUrlParameter (sVar) {
+    return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(sVar).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+  }
+
+  buildUrl(id = null){
+      var params = new URLSearchParams(window.location.search);
+      params.set('tab',this.getUrlParameter('tab'));
+      //params.set('expanded',this.getUrlParameter('expanded'));
+      (id !== null) && params.set('annotationId',id);
+      var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + params.toString();
+      window.history.pushState('test','',newUrl);
+  }
+
   handleEditionState = (show,type,data) => {
+
+    this.buildUrl();
 
     var message = (type==="audio")
     ?
@@ -200,15 +276,23 @@ class DocumentAnnotations extends React.Component {
 
     var coordinates = [];
 
-    window.currentAnnotationEdition.imageCoords.forEach((i) => {
+    (type==="image") && window.currentAnnotationEdition.imageCoords.forEach((i) => {
       var areaCoords = i.areaCoords.split(",");
+
       coordinates.push({
+        image_id: i.image_id,
         x: parseFloat(areaCoords[0]) / parseFloat(areaCoords[4]),
         y: parseFloat(areaCoords[1]) / parseFloat(areaCoords[4]),
         width: (parseFloat(areaCoords[2]) - parseFloat(areaCoords[0])) / parseFloat(areaCoords[4]),
         height: (parseFloat(areaCoords[3]) - parseFloat(areaCoords[1])) / parseFloat(areaCoords[4]),
       });
     });
+
+    if(window.currentAnnotationEdition !== null) window.currentAnnotationEdition.data = coordinates;
+
+    (type==="audio") && (data.start>=0) && window.wavesurfer.seekAndCenter(data.start/window.wavesurfer.getDuration());
+    //window.wavesurfer.setCurrentTime(data.start);
+    window.coordinates = coordinates;
 
     this.setState({
       annotationsPanel:false,
@@ -240,7 +324,7 @@ class DocumentAnnotations extends React.Component {
         coords.push(window.imageRatio);
 
         imageCoords.push({
-          "image_id":c.imageId,
+          "image_id":c.image_id,
           "areaCoords":coords.join(',')
         });
       });
@@ -253,8 +337,10 @@ class DocumentAnnotations extends React.Component {
       //image_id:window.imageSelectionData?window.imageSelectionData.image_id:null,
       //areaCoords:window.imageSelectionData?(window.imageSelectionData.x*window.imageRatio)+","+(window.imageSelectionData.y*window.imageRatio)+","+((window.imageSelectionData.x+window.imageSelectionData.width)*window.imageRatio)+","+((window.imageSelectionData.y+window.imageSelectionData.height)*window.imageRatio)+","+window.imageRatio:null,
       imageCoords:imageCoords,
-      audioStart:parseFloat(this.state.audioSelection.start),
-      audioEnd:parseFloat(this.state.audioSelection.end)
+      audioStart:parseFloat(window.audioSelection.start),
+      audioEnd:parseFloat(window.audioSelection.end)
+      //audioStart:parseFloat(this.state.audioSelection.start),
+      //audioEnd:parseFloat(this.state.audioSelection.end)
     };
 
     (this.state.parentAnnotationId && this.state.parentAnnotationId !== 0) && AnnotationService.create(data).then(
@@ -263,8 +349,13 @@ class DocumentAnnotations extends React.Component {
           this.refreshAnnotations();
           this.setState({
             editionData:response.data,
-            annotationPanel:true
+            annotationPanel:true,
+            loading: false,
+            openCreateDialog:false
           });
+
+          window.wavesurfer && window.wavesurfer.seekAndCenter(response.data.audioStart/window.wavesurfer.getDuration());
+
           
         },
         error => {
@@ -285,20 +376,41 @@ class DocumentAnnotations extends React.Component {
   }
 
   updateAnnotation = () => {
+    var annotationId = this.state.editionData.annotationId;
+
     this.setState({
       loading:true
     });
 
-    this.state.editionType==='audio' && AnnotationService.update(this.state.editionData.annotationId,{audioStart:this.state.editionData.start,audioEnd:this.state.editionData.end}).then(
+    this.state.editionType==='audio' && AnnotationService.update(annotationId,{audioStart:this.state.editionData.start,audioEnd:this.state.editionData.end}).then(
       (response) => {
-          this.setState({
-            loading:false
-          });
+
+          window.wavesurfer.seekAndCenter(response.data.audioStart/window.wavesurfer.getDuration());
+
            window.wavesurfer.markers.markers
           .filter((m)=>m.label === this.state.editionData.annotationLabel)
           .forEach((marker,index)=>{window.wavesurfer.markers.remove(index);});
-          this.refreshAnnotations();
+          //this.refreshAnnotations();
+          //window.wavesurfer.clearMarkers();
+
+          var annotations = this.state.annotations;
+          var newAnnotations = this.replaceAnnotation(annotations,response.data,'audio');
+          var newSelectedAnnotation = this.state.selectedAnnotation;
+          newSelectedAnnotation.audioStart = response.data.audioStart;
+          newSelectedAnnotation.audioEnd = response.data.audioEnd;
+          
+
+          this.setState({
+            loading:false,
+            editionData:response.data,
+            annotationPanel:true,
+            annotations:newAnnotations,
+            selectedAnnotation:newSelectedAnnotation
+          });
+
+          this.loadRegions([response.data]);
           this.handleCloseEdition();
+
         },
         error => {
           this.setState({
@@ -325,39 +437,55 @@ class DocumentAnnotations extends React.Component {
     //TODO si multi image
     if(this.state.editionType==='image'){
       
-      if(window.currentAnnotationEdition.imageAddition){
-        image_coords = window.currentAnnotationEdition.imageCoords;
-      }
+      if(window.coordinates.length > 0){
 
-      console.log(window.currentAnnotationEdition);
+        if(window.currentAnnotationEdition.imageAddition){
+          image_coords = window.currentAnnotationEdition.imageCoords;
+        }
 
-      // buggingwindow.currentAnnotationEdition.data.forEach((c)=>{
-      window.imageSelectionData.forEach((c)=>{
-        var coords=[];
-        coords.push(c.x*window.imageRatio);
-        coords.push(c.y*window.imageRatio);
-        coords.push((c.x + c.width)*window.imageRatio);
-        coords.push((c.y + c.height)*window.imageRatio);
-        coords.push(window.imageRatio);
+        window.currentAnnotationEdition.data && window.currentAnnotationEdition.data.forEach((c)=>{
+          var coords=[];
+          coords.push(c.x*window.imageRatio);
+          coords.push(c.y*window.imageRatio);
+          coords.push((c.x + c.width)*window.imageRatio);
+          coords.push((c.y + c.height)*window.imageRatio);
+          coords.push(window.imageRatio);
 
-        image_coords.push({
-          "image_id":c.imageId,
-          "areaCoords":coords.join(',')
-        });
-      });
-
-    }
-
-    this.state.editionType==='image' && AnnotationService.update(this.state.editionData.annotationId,{imageCoords:image_coords}).then(
-      (response) => {
-          this.setState({
-            loading:false
+          image_coords.push({
+            "image_id":c.image_id,
+            "areaCoords":coords.join(',')
           });
+        });
+
+      }
+      
+      AnnotationService.update(annotationId,{imageCoords:image_coords}).then(
+      (response) => {
+
            window.wavesurfer &&  window.wavesurfer.markers.markers
           .filter((m)=>m.label === this.state.editionData.annotationLabel)
           .forEach((marker,index)=>{window.wavesurfer.markers.remove(index);});
-          this.refreshAnnotations();
+          //this.refreshAnnotations();
+
+          var annotations = this.state.annotations;
+          var newAnnotations = this.replaceAnnotation(annotations,response.data,'image');
+          var newSelectedAnnotation = this.state.selectedAnnotation;
+          newSelectedAnnotation.imageCoords = response.data.imageCoords;
+
+          this.setState({
+            loading:false,
+            editionData:response.data,
+            annotationPanel:true,
+            annotations:newAnnotations,
+            selectedAnnotation:newSelectedAnnotation
+          });
+
+          var canvasList = [];
+          this.loadCanvas(newAnnotations[0],canvasList);
+          this.setState({imageCanvas:canvasList});
+
           this.handleCloseEdition();
+
         },
         error => {
           this.setState({
@@ -375,11 +503,19 @@ class DocumentAnnotations extends React.Component {
 
           alert(resMessage);
         });
+
+    }
+
   }
 
   handleCloseEdition = (event) => {
-    this.setState({openEditionNotification:false,editionNotification:"",editionData:{}});
+    this.setState({
+      openEditionNotification:false,
+      editionNotification:"",
+      editionData:{}
+    });
     window.currentAnnotationEdition = null;
+    window.imageSelectionData = [];
   }
 
       /**
@@ -399,11 +535,11 @@ class DocumentAnnotations extends React.Component {
       );
   }
 
-  refreshParentAnnotationsList = () => {
+  refreshParentAnnotationsList = (annotations) => {
     var list = [];
     var that = this;
 
-    this.state.annotations.forEach(function(t){
+    annotations.forEach(function(t){
       list.push({
         'id':t.id,
         'rank':0,
@@ -473,8 +609,8 @@ class DocumentAnnotations extends React.Component {
       t_list.nextChildRank = nextSentenceRank+1;
     });
 
-
-    this.setState({parentAnnotations:list});
+    return list;
+    
   }
 
   loadCanvas = (annotation,array) => {
@@ -490,7 +626,7 @@ class DocumentAnnotations extends React.Component {
       });
     });
 
-    annotation.children_annotations.forEach((a)=>{
+    if(annotation.children_annotations) annotation.children_annotations.forEach((a)=>{
       this.loadCanvas(a,array);
     });
 
@@ -514,178 +650,35 @@ class DocumentAnnotations extends React.Component {
     this.setState({
       selectedTreeAnnotations:array
     });
-
-
-  }
-
-  convertAnnotationsToTree = (annotation) => {
-
-    annotation.children_annotations.sort((a, b) => a.rank - b.rank);
-
-    var that = this;
-    var childTypes = {
-      'T':'sentence','S':'word','W':'morpheme',
-    };
-
-    var badgeStyleCommon = {
-        //position: "absolute",
-        top:"0px",
-        width: "15px",
-        height: "15px",
-        borderRadius: "50%",
-        color: "white",
-        fontSize: "0.6rem",
-        fontWeight: "bold",
-        textAlign: "center",
-        padding:"3px"
-      };
-
-    var badgeStyleForm = {
-        position: badgeStyleCommon.position,
-        top:badgeStyleCommon.top,
-        width: badgeStyleCommon.width,
-        height: badgeStyleCommon.height,
-        borderRadius: badgeStyleCommon.borderRadius,
-        color: badgeStyleCommon.color,
-        fontSize: badgeStyleCommon.fontSize,
-        fontWeight: badgeStyleCommon.fontWeight,
-        textAlign: badgeStyleCommon.textAlign,
-        paddingLeft:badgeStyleCommon.padding,
-        paddingRight:badgeStyleCommon.padding
-      };
-
-    var badgeStyleTranslation = {
-        position: badgeStyleCommon.position,
-        top:badgeStyleCommon.top,
-        width: badgeStyleCommon.width,
-        height: badgeStyleCommon.height,
-        borderRadius: badgeStyleCommon.borderRadius,
-        color: badgeStyleCommon.color,
-        fontSize: badgeStyleCommon.fontSize,
-        fontWeight: badgeStyleCommon.fontWeight,
-        textAlign: badgeStyleCommon.textAlign,
-        paddingLeft:badgeStyleCommon.padding,
-        paddingRight:badgeStyleCommon.padding
-      };
-
-      var badgeStyleAudio = {
-        position: badgeStyleCommon.position,
-        top:badgeStyleCommon.top,
-        width: badgeStyleCommon.width,
-        height: badgeStyleCommon.height,
-        borderRadius: badgeStyleCommon.borderRadius,
-        color: badgeStyleCommon.color,
-        fontSize: badgeStyleCommon.fontSize,
-        fontWeight: badgeStyleCommon.fontWeight,
-        textAlign: badgeStyleCommon.textAlign,
-        paddingLeft:badgeStyleCommon.padding,
-        paddingRight:badgeStyleCommon.padding
-      };
-
-    var badgeStyleImage = {
-        position: badgeStyleCommon.position,
-        top:badgeStyleCommon.top,
-        width: badgeStyleCommon.width,
-        height: badgeStyleCommon.height,
-        borderRadius: badgeStyleCommon.borderRadius,
-        color: badgeStyleCommon.color,
-        fontSize: badgeStyleCommon.fontSize,
-        fontWeight: badgeStyleCommon.fontWeight,
-        textAlign: badgeStyleCommon.textAlign,
-        paddingLeft:badgeStyleCommon.padding,
-        paddingRight:badgeStyleCommon.padding
-      };
-
-      var formInfo = "";var translationInfo = "";var audioInfo = "";var imageInfo = "";
-      //FORM INFO
-      if(annotation.forms.length > 0){
-        badgeStyleForm.backgroundColor = "green";
-        formInfo = "At least one form exists";
-      }else{
-        badgeStyleForm.backgroundColor = "red";
-        formInfo = "No form";
-      }
-      //TRANSL INFO
-      if(annotation.translations.length > 0){
-        badgeStyleTranslation.backgroundColor = "green";
-        translationInfo = "At least one translation exists";
-      }else{
-        badgeStyleTranslation.backgroundColor = "red";
-        translationInfo = "No translation";
-      }
-      //AUDIO INFO
-      if( (parseFloat(annotation.audioStart) + parseFloat(annotation.audioEnd)) > 0){
-        badgeStyleAudio.backgroundColor = "green";
-        audioInfo = "Audio selection exists";
-      }else{
-        badgeStyleAudio.backgroundColor = "red";
-        audioInfo = "No audio selection";
-      }
-      //IMAGE INFO
-      if(annotation.imageCoords && annotation.imageCoords.length > 0){
-        badgeStyleImage.backgroundColor = "green";
-        imageInfo = "Image selection exists";
-      }else{
-        badgeStyleImage.backgroundColor = "red";
-        imageInfo = "No image selection";
-      }
-
-
-      return (
-        <Tree 
-          key={annotation.id}
-          canHide = {annotation.type !== 'T'}
-          content={annotation.type !== 'T' && (<React.Fragment>
-        {annotation.forms && annotation.forms.length > 0 && annotation.forms[0].text}
-        <span>  </span>
-        <span class="infoBadge" style={badgeStyleForm} title={formInfo} >F</span>
-        <span class="infoBadge" style={badgeStyleTranslation} title={translationInfo} >T</span>
-        {this.props.recording !== null && <span class="infoBadge" style={badgeStyleAudio} title={audioInfo} >A</span>}
-        {this.props.images.length > 0 && <span class="infoBadge" style={badgeStyleImage} title={imageInfo} >I</span>}
-      </React.Fragment>)} 
-          type={annotation.type === 'T' ? 'Annotations' : (<FormControlLabel
-          control={
-            <Checkbox
-              onChange={that.handleCheckTree}
-              value={annotation.id+'_'+annotation.type+annotation.rank}
-              name="checkedTree"
-              color="primary"
-            />
-          }
-          label={annotation.type+annotation.rank}
-        />)}
-          onClick={() => this.showAnnotation(this.props.documentId,annotation.id)}
-          open={this.props.expanded}
-          >
-          {
-            annotation.children_annotations && annotation.children_annotations.map((children_annotation) => this.convertAnnotationsToTree(children_annotation))
-          }
-        </Tree>
-      );
-
   }
 
   /**
    * Get all document annotations from database and refresh the page content
    */
-  refreshAnnotations = () => {
+  refreshAnnotations = (onlyTree = false,annotationId = null) => {
 
     var canvasList = [];
 
     AnnotationService.getDocumentAnnotations(this.props.documentId).then(
       (response) => {
-          this.setState({
-            annotations:response.data.annotations,
-            change:0
-          });
-          this.refreshParentAnnotationsList();
-          this.props.refreshDocumentAnnotations(response.data.annotations);
-          this.loadRegions(response.data.annotations);
           this.loadCanvas(response.data.annotations[0],canvasList);
           this.setState({
-            imageCanvas:canvasList
+            annotations:response.data.annotations,
+            change:0,
+            imageCanvas:canvasList,
+            treeKey:Date.now(),
+            parentAnnotations:this.refreshParentAnnotationsList(response.data.annotations)
           });
-          window.coordinates = undefined;
+
+          if(!onlyTree){
+            window.wavesurfer && window.wavesurfer.clearMarkers();
+            this.loadRegions(response.data.annotations);
+            
+
+            window.coordinates = undefined;
+          }
+
+          if(annotationId>0) this.showAnnotation(this.props.documentId,annotationId);
         },
         error => {
           if(error.response.status===401) this.props.history.push('/login');
@@ -701,21 +694,58 @@ class DocumentAnnotations extends React.Component {
   }
 
   /**
-   * Load regions from localStorage.
+   * refresh 
    */
-   loadRegions(regions) {
+  replaceAnnotation = (annotations,annotation,type) => {
+
+    annotations.forEach((a,index) => {
+      if(a.id === annotation.id){
+        if(type==="audio"){
+          annotations[index].audioStart = annotation.audioStart;
+          annotations[index].audioEnd = annotation.audioEnd;
+        }else if(type==="image"){
+          annotations[index].imageCoords = annotation.imageCoords;
+        }
+      }else{
+        this.replaceAnnotation(a.children_annotations,annotation,type);
+      }
+    });
+
+    return annotations;
+  }
+
+
+  /*
+   * Load regions.
+   */
+
+   loadRegions(annotations){
+
       var that = this;
+      /*
+      window.wavesurfer.regions.list
+      .filter((m)=>m.indexOf('wavesurfer_')>=0)
+      .forEach((m)=>m.remove());
+      */
 
       //Adapt to the recursive structure of annotation --> children annotations
-      window.wavesurfer && regions.forEach(function(region) {
-        var annotationLabel = region.id+"_"+region.type+region.rank;
-        window.wavesurfer.regions.list[region.id] && window.wavesurfer.regions.list[region.id].remove();
-             
-        if(region.type!=="T"){
-          window.wavesurfer.addRegion({
-              id:region.id,
-              start: region.audioStart,
-              end: region.audioEnd,
+      window.wavesurfer && annotations.forEach(function(annotation) {
+
+        if(annotation.type!=="T"){
+
+          var annotationLabel = annotation.id+"_"+annotation.type+annotation.rank;
+
+
+
+         if ((annotationLabel.indexOf("_")>=0) && ((parseFloat(annotation.audioStart) + parseFloat(annotation.audioEnd))>0)){
+
+            window.wavesurfer.regions.list[annotation.id] && window.wavesurfer.regions.list[annotation.id].remove();
+            document.querySelectorAll('region[data-id="'+annotation.id+'"]').forEach((region)=>region.remove());
+
+            window.wavesurfer.addRegion({
+              id:annotation.id,
+              start: annotation.audioStart,
+              end: annotation.audioEnd,
               drag: false,
               resize: false,
               color:"rgba(0,0,0,0.2)",
@@ -725,32 +755,60 @@ class DocumentAnnotations extends React.Component {
                 }
             });
 
-          window.wavesurfer.markers.markers
-          .filter((m)=>m.label === annotationLabel)
-          .forEach((marker,index)=>{window.wavesurfer.markers.remove(index);});
+            window.wavesurfer.markers.markers
+            .map((item, index) => ({ item, index }))
+            .filter((m)=>m.item.label===annotationLabel)
+            .forEach(({ item, index}) => window.wavesurfer.markers.remove(index));
 
-          //window.wavesurfer.markers.remove
-          window.wavesurfer.addMarker({
-            time: region.audioStart,
-            label: annotationLabel,
-            color: (region.type==="S")?"red":"blue",
-            position: (region.type==="S")?"bottom":"top",
-          });
 
+            window.wavesurfer.addMarker({
+              time: annotation.audioStart,
+              label: annotationLabel,
+              color: (annotation.type==="S")?"red":"blue",
+              position: (annotation.type==="S")?"bottom":"top",
+            });
+         }
+          
         }
 
-        region.children_annotations.length > 0 && that.loadRegions(region.children_annotations);
+        annotation.children_annotations && annotation.children_annotations.length > 0 && that.loadRegions(annotation.children_annotations);
         
       });
   }
 
-  showAnnotation = (documentId,annotationId) => {
-    AnnotationService.get(documentId,annotationId).then(
+  showAnnotation = (documentId,annotationId,forceRefresh = false) => {
+
+    this.buildUrl(annotationId);
+
+    ((annotationId!==this.state.activeAnnotationId) || forceRefresh) && AnnotationService.get(documentId,annotationId).then(
         (response) => {
             this.setState({
               annotationPanel:true,
-              selectedAnnotation:response
+              selectedAnnotation:response,
+              activeAnnotationId:annotationId
             });
+            
+            if(window.wavesurfer && window.wavesurfer.getDuration()>0 && response.audioStart!==null && response.audioEnd!==undefined && response.audioEnd>0){
+              //window.wavesurfer.play(parseFloat(response.audioStart),parseFloat(response.audioEnd));
+              window.wavesurfer.seekAndCenter(parseFloat(response.audioStart)/window.wavesurfer.getDuration());
+
+            }
+
+            if(window.hasScrolled || (window.annotationPanelPosition.x === 0 && window.annotationPanelPosition.y === 0)){
+
+              window.annotationPanelPosition.x = (document.getElementById('root').offsetWidth/3);
+              //window.annotationPanelPosition.y = (document.getElementById('root').offsetHeight-document.getElementById('audioBlock').offsetTop) * (-1);
+              window.annotationPanelPosition.y = (document.querySelector('.react-draggable').offsetTop - window.scrollY) * (-1);
+              
+              this.setState({
+                annotationPanelPositionX:window.annotationPanelPosition.x,
+                annotationPanelPositionY:window.annotationPanelPosition.y,
+              });
+
+              window.hasScrolled = false;
+            }
+            
+
           },
           error => {
             if(error.response.status===401) this.props.history.push('/login');
@@ -765,71 +823,18 @@ class DocumentAnnotations extends React.Component {
           });
   }
 
-  handleCloseDeleteDialog = (event) => {
-    this.setState({
-        openDeleteDialog: false
-      });
-  };
-
-  handleOpenDeleteDialog = (event) => {
-    this.setState({
-        openDeleteDialog: true
-      });
-  };
-
-  handleDeleteAnnotation = (event) => {
-    //todo
-    this.setState({
-      loading: true
-    });
-
-    var checkToDel = this.state.selectedTreeAnnotations.length;
-    var countDeleted = 0;
-
-    this.state.selectedTreeAnnotations.forEach((a)=>{
-
-      AnnotationService.delete(a.id).then(
-      (response) => {
-          countDeleted++;
-          console.log(checkToDel,countDeleted);
-
-          if(countDeleted === checkToDel){
-            this.setState({
-              loading: false
-            });
-            this.handleCloseDeleteDialog();
-            this.refreshAnnotations();
-          }
-            
-          
-        },
-        error => {
-          if(error.response.status===401) this.props.history.push('/login');
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          this.setState({
-            loading: false,
-            message: resMessage
-          });
-        });
-
-    });
-  };
-
-  
 
   componentDidMount(){
 
-    this.refreshParentAnnotationsList();
+
 
     if(this.props.recording !== null){
+
+
       const track = document.querySelector('#track');
       var that = this;
+
+      window.audioSelection = {};
 
       window.wavesurfer = WaveSurfer.create({
         /*barWidth: 1,*/
@@ -865,15 +870,22 @@ class DocumentAnnotations extends React.Component {
           ]
       });
 
+      (window.zoom) && window.wavesurfer.zoom(window.zoom*10);
+
       /* Regions */
 
       window.wavesurfer.on('ready', function() {
+
           window.wavesurfer.enableDragSelection({
               color: "rbga(0,150,90,0.5)"
           });
+          //window.wavesurfer.setCurrentTime(window.currentTime?window.currentTime:0);
+
+          (window.currentTime) && window.wavesurfer.seekAndCenter(window.currentTime/window.wavesurfer.getDuration());
+
 
           //Adapt the annotations props to fit with the Wavesurfer API
-          if (that.state.annotations){
+          if(that.state.annotations){
             that.state.annotations.forEach((a) => {
               a.start = a.audioStart;
               a.end = a.audioEnd;
@@ -884,77 +896,107 @@ class DocumentAnnotations extends React.Component {
 
             });
           }
+
+         
       });
 
       window.wavesurfer.on('pause', function() {
-         that.setState({playing:false});
-
+        /*
+         that.setState({
+          playing:false,
+          currentTime: window.wavesurfer.getCurrentTime()
+        });
+        */
       });
 
-      window.wavesurfer.on('region-click', function(region, e) {
-          that.setState({playing:true});
-          e.stopPropagation();
-          // Play on click, loop on shift click
-          e.shiftKey ? region.playLoop() : region.play();
-      });
-     // window.wavesurfer.on('region-click', that.editAnnotation);
-      window.wavesurfer.on('region-updated', function(region){
-          var regions = region.wavesurfer.regions.list;
-          var keys = Object.keys(regions).filter((key)=>key.indexOf("wavesurfer")>=0);
-
-          if(keys.length > 1){
-            regions[keys[0]].remove();
-          }
-
-          region.element.style['z-index']=10;
-
-          window.currentAnnotationEdition && that.handleEditionState(true,"audio",{annotationLabel:window.currentAnnotationEdition.label,annotationId:window.currentAnnotationEdition.id,start:region.start.toFixed(2),end:region.end.toFixed(2)});
-          
-          that.setState({
-            audioSelection:{
-              start:region.start.toFixed(2),
-              end:region.end.toFixed(2)
-            },
-            hasAudioSelection:true
-          });
+      window.wavesurfer.on('seek', function() {
+        window.currentTime = window.wavesurfer.getCurrentTime();
       });
 
       window.wavesurfer.on('region-dblclick', function(region, e){
-        window.wavesurfer.pause();
-        e.stopPropagation();
+        //region.remove();
+        //e.stopPropagation();
       });
 
-      window.wavesurfer.on('marker-click', function(region, e){
+      window.wavesurfer.on('region-click', function(region, e) {
+/*
+          that.setState({
+            playing:true,
+          });
+ */         
 
+          e.stopPropagation();
+          // Play on click, loop on shift click
+
+          if(region.id>0){
+            that.showAnnotation(that.props.documentId,region.id);
+          }else{
+            //e.shiftKey ? region.playLoop() : region.playPause();
+            //region.play();
+          }
+          region.play();
+
+      });
+     // window.wavesurfer.on('region-click', that.editAnnotation);
+      window.wavesurfer.on('region-update-end', function(region){       
+
+        document.querySelectorAll('region').forEach(function(r){
+          var rID = r.getAttribute("data-id");
+          if(window.wavesurfer && rID.indexOf("wavesurfer_") >= 0) window.wavesurfer.regions.list[rID].remove();
+
+        });
+
+        window.wavesurfer.addRegion(region);
+
+        if(region.element !== null) region.element.style['z-index']=10;
+
+        window.currentAnnotationEdition && that.handleEditionState(true,"audio",{annotationLabel:window.currentAnnotationEdition.label,annotationId:window.currentAnnotationEdition.id,start:region.start.toFixed(2),end:region.end.toFixed(2)});
+        
+        window.audioSelection.start = region.start.toFixed(2);
+        window.audioSelection.end = region.end.toFixed(2);
+/*
+        that.setState({
+          audioSelection:{
+            start:region.start.toFixed(2),
+            end:region.end.toFixed(2)
+          },
+          hasAudioSelection:true
+        });
+*/
+
+      });
+
+
+      window.wavesurfer.on('marker-click', function(region, e){
         that.showAnnotation(that.props.documentId,region.label.split("_")[0]);
         e.stopPropagation();
       });
 
       window.wavesurfer.on('region-play', function(region) {
           region.once('out', function() {
-              window.wavesurfer.play(region.start);
+              //console.log('region play event');
+              //window.wavesurfer.play(region.start);
               window.wavesurfer.pause();
           });
       });
 
       window.wavesurfer.load(track);
+      this.handleSliderZoomChange(100,(window.zoom?window.zoom:0));
+      
     }
-
-    this.handleSliderChange(100,10);
 
     var canvasList = [];
     this.loadCanvas(this.state.annotations[0],canvasList);
-    this.setState({imageCanvas:canvasList});
+    this.setState({
+      parentAnnotations:this.refreshParentAnnotationsList(this.state.annotations),
+      imageCanvas:canvasList
+    });
 
-    window.addEventListener('wheel', (e) => {  
-      if(e.target.tagName === 'WAVE' || e.target.tagName === 'REGION'){
-        e.preventDefault();
-        e.stopPropagation();
-        var newValue = this.state.zoom+Math.round(e.deltaY/50);
-        if(newValue >= 0 && newValue <= 100) this.handleSliderChange(100,newValue);
+    if(window.wavesurfer){
+      window.wavesurfer.clearMarkers();
+      this.loadRegions(this.state.annotations);
+    }
 
-        return false;}
-    },{passive: false});
 
     if(this.state.activeAnnotationId>0){
       this.showAnnotation(this.props.documentId,this.state.activeAnnotationId);
@@ -965,14 +1007,15 @@ class DocumentAnnotations extends React.Component {
 
   handlePlay = () => {
     this.setState({ 
-      playing: !this.state.playing, 
+      playing: !this.state.playing,
+      currentTime: window.wavesurfer.getCurrentTime()
       //crop: window.crop 
     });
+    window.currentTime= window.wavesurfer.getCurrentTime();
     window.wavesurfer.playPause();
   };
 
-  toggleAnnotationsDrawer = (anchor, open) => (event) => {
-    if(this.state.change > 0) this.refreshAnnotations();
+  toggleAnnotationsDrawer = (open) => (event) => {
     this.setState({annotationsPanel: open });
   };
 
@@ -984,13 +1027,15 @@ class DocumentAnnotations extends React.Component {
     this.setState({hasImageSelection:exist});
   }
 
-  annotationHasChanged = () => {
-    this.setState({change:this.state.change+1});
+  annotationHasChanged = (annotationId = null) => {
+
+    this.refreshAnnotations(true);
+    (annotationId!==null) && this.showAnnotation(this.props.documentId,annotationId);
   }
 
   render = () => {
 
-    this.loadRegions(this.state.annotations);
+  console.log();
 
     var docType = this.props.documentType;
 
@@ -1041,7 +1086,6 @@ class DocumentAnnotations extends React.Component {
       //badgeStyleForm.backgroundColor = (annotation.forms.length > 0) ? "green":"red";
       //badgeStyleTranslation.backgroundColor = (annotation.translations.length > 0) ? "green":"red";
 
-
     function TabPanel(props) {
 
       const { children, value, index, id,...other } = props;
@@ -1082,69 +1126,42 @@ class DocumentAnnotations extends React.Component {
 
     this.props.images.forEach(function(image,index){
 
-      if(localStorage["image"+image.id]!==undefined){
-        localStorage["image"+image.id]=image["TO_BASE64(content)"];
-      }else{
-        localStorage.setItem("image"+image.id, image["TO_BASE64(content)"]);
-      }
-
       var imageCanvas = that.state.imageCanvas.filter((area) => area.image_id === image.id);
 
-
-      imagesTabs.push(<Tab label={image.name} {...a11yProps(image.name)} />)
+      imagesTabs.push(<Tab wrapped label={image.name} {...a11yProps(image.name)} />)
       imagesTabContents.push(
         <TabPanel key={image.id} value={that.state.tabValue} index={index} id={image.id}>
-        <ImageMultiSelector
-          key={image.id}
-          image={image}
-          annotations={that.state.annotations}
-          canvas={imageCanvas}
-          coordinates={that.state.coordinates}
-          showAnnotation={that.showAnnotation}
-          showImageCanvas={that.state.showImageCanvas}
-          selectionExists={that.selectionExists}
-          children={0}
-          documentId={that.props.documentId}
-        />
-
-
-        
-
+          <ImageMultiSelector
+            key={image.id}
+            image={image}
+            annotations={that.state.annotations}
+            canvas={imageCanvas}
+            coordinates={(that.state.coordinates===undefined)?[]:that.state.coordinates.filter(coords => coords.image_id === image.id)}
+            //coordinates={(window.coordinates===undefined)?[]:window.coordinates.filter(coords => coords.image_id === image.id)}
+            showAnnotation={that.showAnnotation}
+            showImageCanvas={that.state.showImageCanvas}
+            selectionExists={that.selectionExists}
+            children={0}
+            documentId={that.props.documentId}
+          />
         </TabPanel>);
     });
 
+    const marks = [
+      {
+        value: 0,
+        label: '-',
+      },
+      {
+        value: 100,
+        label: '+',
+      }
+    ];
+
+    window.addEventListener('scroll', function(){window.hasScrolled=true});
+
     return (
-      <React.Fragment>
-        
-        {this.props.recording === null ? <Chip icon={<MicOffIcon />} label="No audio recording" size="small"/> : 
-          <div>
-            <IconButton color="primary" title="Play audio" aria-label="Play audio" onClick={this.handlePlay}>
-              {!this.state.playing ? <PlayIcon /> : <PauseIcon /> }
-            </IconButton>
-
-            <Grid container spacing={2}>
-              <Grid item>
-                  <ZoomOut />
-              </Grid>
-              <Grid item xs>
-              <Slider value={this.state.zoom} onChange={this.handleSliderChange} aria-labelledby="zoom-slider" />
-              </Grid>
-              <Grid item>
-                  <ZoomIn />
-              </Grid>
-            </Grid>
-
-            <div hidden={this.props.recording === null} >
-              <div id="wave-timeline"></div>
-              <div id="wave-minimap"></div>
-              <div id="wave-regions"></div>
-              <div id="waveform">
-                <audio id="track" src={"data:audio/mpeg;base64,"+this.props.recording["TO_BASE64(content)"]} type="audio/mp3" />
-              </div>
-            </div>
-          </div>
-        }
-
+      <div>
         <span>
           <Chip
             icon={<ImportIcon />}
@@ -1175,71 +1192,135 @@ class DocumentAnnotations extends React.Component {
               color="primary"
               onClick={this.handleOpenCreateDialog}
             />
-
-          <Drawer anchor="bottom" open={this.state.annotationPanel} onClose={this.handleCloseCreateDrawer}>
-            <div
-              role="presentation"
-            >
-              <DocumentAnnotation 
-                data={this.state.selectedAnnotation}
-                documentType={docType}
-                refreshAnnotations={this.refreshAnnotations}
-                handleEditionState={this.handleEditionState}
-                parentAnnotations={this.state.parentAnnotations}
-                available_lang={this.props.available_lang}
-                available_kindOf={this.props.available_kindOf}
-                annotationHasChanged={this.annotationHasChanged}
-                onClose={this.handleCloseCreateDrawer}
-              />
+        </span>
+        <span>
+          <Chip
+            icon={<ImportIcon />}
+            label="View Annotations"
+            clickable
+            size="small"
+            color="primary"
+            onClick={this.toggleAnnotationsDrawer(true)}
+          />
+          <Drawer
+            variant="persistent"
+            anchor="left"
+            open={this.state.annotationsPanel}
+            onClose={this.toggleAnnotationsDrawer(false)}
+          >  
+            <div>
+              <IconButton onClick={this.toggleAnnotationsDrawer(false)}>
+                <ChevronLeftIcon />
+              </IconButton>
             </div>
+            <DocumentAnnotationsTree
+              parentAnnotations={this.state.parentAnnotations}
+              key={this.state.treeKey}
+              documentId={this.props.documentId}
+              annotations={this.state.annotations}
+              refreshAnnotations={this.refreshAnnotations}
+              hasAudio={this.props.recording!==null}
+              hasImage={this.props.images.length > 0}
+              showAnnotation={this.showAnnotation}
+            />
           </Drawer>
         </span>
+        
+        {this.props.recording === null ? <Chip id="audioBlock" icon={<MicOffIcon />} label="No audio recording" size="small"/> : 
+          <div id="audioBlock">
 
-        <Chip
-              icon={<DeleteIcon />}
-              label="Delete selected annotation(s)"
-              clickable
-              size="small"
-              color="primary"
-              onClick={this.handleOpenDeleteDialog}
-              style={{display:((this.state.selectedTreeAnnotations.length===0)?'none':'inline-flex')}}
-            />
+            {(1===2) && <FormControlLabel
+                          control={<Switch color="primary" checked={this.state.showRegions} onChange={this.handleShowRegions} name="showRegions" />}
+                          label="Show regions"
+                        />}
 
-        {this.convertAnnotationsToTree(this.state.annotations[0])}
+            <Grid container spacing={4}>
+              <Grid item xs={1}>
+                <IconButton color="primary" title="Play audio" aria-label="Play audio" onClick={this.handlePlay}>
+                  {!this.state.playing ? <PlayIcon /> : <PauseIcon /> }
+                </IconButton>
+              </Grid>
 
-        <Dialog open={this.state.openDeleteDialog} onClose={this.handleCloseDeleteDialog} aria-labelledby="form-deletedialog-title">
-            <DialogTitle id="form-deletedialog-title">Delete annotation</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Delete annotation(s) ?
-                {
-                  this.state.selectedTreeAnnotations.map((a) => (
-                  ' '+a.label
-                ))}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.handleCloseDeleteDialog} color="primary">
-                Cancel
-              </Button>
-              {!this.state.loading && <Button onClick={this.handleDeleteAnnotation} color="primary">
-                Delete annotation
-              </Button>
-              }
-              {this.state.loading && <CircularProgress />}
-            </DialogActions>
-          </Dialog>
+              <Grid item xs={4}>
+                <Typography id="continuous-slider" gutterBottom>
+                  Playback speed
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item>
+                    slow
+                  </Grid>
+                  <Grid item xs>
+                    <Slider 
+                      orientation="horizontal"
+                      aria-labelledby="speed-slider"
+                      min={0.1}
+                      max={1}
+                      step={0.05}
+                      value={this.state.speed}
+                      onChange={this.handleSliderSpeedChange}
+                    />
+                  </Grid>
+                  <Grid item>
+                    normal
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Typography id="continuous-slider" gutterBottom>
+                  Zoom
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item>
+                    <ZoomOut />
+                  </Grid>
+                  <Grid item xs>
+                  <Slider 
+                      orientation="horizontal"
+                      value={this.state.zoom}
+                      onChange={this.handleSliderZoomChange}
+                      aria-labelledby="zoom-slider"
+                      marks={marks}
+                    />
+                    </Grid>
+                  <Grid item>
+                    <ZoomIn />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <div hidden={this.props.recording === null} >
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <div id="wave-timeline"></div>
+                  <div id="wave-minimap"></div>
+                  <div id="wave-regions"></div>
+                  <div id="waveform">
+                    <audio id="track" src={"data:audio/mpeg;base64,"+this.props.recording["TO_BASE64(content)"]} type="audio/mp3" />
+                  </div>
+                </Grid>
+              </Grid>
+            </div>
+          </div>
+        }
 
         {this.props.images.length > 0 ? 
           (
             <div>
               <AppBar position="static">
-                <Tabs value={this.state.tabValue} onChange={handleChange} aria-label="simple tabs example">
+                <Tabs 
+                  value={this.state.tabValue}
+                  onChange={handleChange}
+                  aria-label="simple tabs example"
+                  variant="scrollable"
+                  scrollButtons="auto"
+                >
                   {imagesTabs}
                 </Tabs>
                </AppBar>
                <FormControlLabel
-                  control={<Switch checked={this.state.showImageCanvas} onChange={this.handleShowImageCanvas} name="showImageCanvas" />}
+                  control={<Switch color="primary" checked={this.state.showImageCanvas} onChange={this.handleShowImageCanvas} name="showImageCanvas" />}
                   label="Show image selections"
                 />
               {imagesTabContents}
@@ -1328,7 +1409,7 @@ class DocumentAnnotations extends React.Component {
                         hidden={this.state.newAnnotationType!==a.childrenType}
                         audioStart={a.audioStart}
                         audioEnd={a.audioEnd}
-                        selected={this.state.newAnnotationType===a.childrenType && a.audioStart<=this.state.audioSelection.start && a.audioEnd>=this.state.audioSelection.end}
+                        selected={this.state.newAnnotationType===a.childrenType && a.audioStart<=window.audioSelection.start && a.audioEnd>=window.audioSelection.end}
                         >
                         {a.label}
                       </option>
@@ -1350,8 +1431,52 @@ class DocumentAnnotations extends React.Component {
               {this.state.loading && <CircularProgress />}
             </DialogActions>
           </Dialog>
+
+
+          <Draggable
+            onStop={(e: Event, data: DraggableData) => {window.annotationPanelPosition=data;this.setState({annotationPanelPositionX:data.x,annotationPanelPositionY:data.y})}}
+            position={{x:this.state.annotationPanelPositionX,y:this.state.annotationPanelPositionY}}
+          >
+
+            <Accordion
+              expanded={this.state.annotationPanel}
+              onChange={(event) => this.setState({annotationPanel:!this.state.annotationPanel})}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              > 
+                <Grid container>
+                  <Grid item xs={1} onClick={(event) => event.stopPropagation()}>
+                    <OpenWithIcon />
+                  </Grid>
+                  <Grid item xs={8}>
+                    <Typography>Annotation panel</Typography>
+                  </Grid>
+                </Grid>
+              </AccordionSummary>
+
+              <AccordionDetails style={{display:"contents"}}>
+                <DocumentAnnotation 
+                      data={this.state.selectedAnnotation}
+                      documentType={docType}
+                      refreshAnnotations={this.refreshAnnotations}
+                      handleEditionState={this.handleEditionState}
+                      parentAnnotations={this.state.parentAnnotations}
+                      available_lang={this.props.available_lang}
+                      available_kindOf={this.props.available_kindOf}
+                      annotationHasChanged={this.annotationHasChanged}
+                      onClose={this.handleCloseCreateDrawer}
+                      showAnnotation={this.showAnnotation}
+                 />
+              </AccordionDetails>
+
+            </Accordion>
+          </Draggable>
+
           <div style={{minHeight:"90px"}}></div>
-      </React.Fragment>
+      </div>
     );
   }
 };

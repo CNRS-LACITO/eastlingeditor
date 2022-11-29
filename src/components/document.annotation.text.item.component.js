@@ -327,7 +327,7 @@ export default class TextItem extends React.Component {
           >
           <Chip label={this.props.type} size="small" />
 
-          <Chip label={this.props.lang} size="small" color="secondary" />
+          <Chip label={this.props.lang} size="small" color="primary" variant="outlined" />
 
           {this.props.text.substring(0,50)}{this.props.text.length>50?"...":""}
 
@@ -370,6 +370,7 @@ export default class TextItem extends React.Component {
                     rowsMax={4}
                     value={this.state.text}
                     onChange={this.onTextChange}
+                    onMouseDown={(e) => {e.stopPropagation()}}
                   />
                 </Grid>
               </Grid>

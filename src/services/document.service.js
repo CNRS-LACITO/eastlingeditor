@@ -61,6 +61,14 @@ class DocumentService {
 	    });
   	}
 
+  	getAnnotations(docId) {
+  		var headers = authHeader();
+  		headers['Content-Type'] = 'application/json';
+
+	    return axios.get(API_URL + 'documents/' + docId + '/annotations', { headers: headers })
+	      .then(response => response);
+	  }
+
   	getAnnotationsXML(docId) {
   		var headers = authHeader();
   		headers['Content-Type'] = 'xml';
@@ -69,11 +77,11 @@ class DocumentService {
 	      .then(response => response);
 	  }
 
-	getAnnotationsYAML(docId) {
+	getAnnotationsJSON4LATEX(docId) {
   		var headers = authHeader();
-  		headers['Content-Type'] = 'xml';
+  		headers['Content-Type'] = 'application/json';
 
-	    return axios.get(API_URL + 'documents/' + docId + '/annotationsyaml', { headers: headers })
+	    return axios.get(API_URL + 'documents/' + docId + '/annotationsjson4latex', { headers: headers })
 	      .then(response => response);
 	  }
 }

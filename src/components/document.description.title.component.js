@@ -57,7 +57,8 @@ class Title extends Component {
           avatar={<Avatar>{this.props.title.lang.toUpperCase()}</Avatar>}
           label={this.props.title.title} 
           onDelete={this.handleDelete}
-          color="secondary"
+          color="primary"
+          variant="outlined"
         />
     );
   }

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Container from '@material-ui/core/Container';
-
+import Box from '@material-ui/core/Box';
+import Link from '@material-ui/core/Link';
 //import Metadata from './Components/Metadata';
 import DisplayOptions from './player/DisplayOptions';
 import Player from './player/Player';
@@ -14,6 +15,8 @@ export default class DocumentPreview extends Component {
   ** Convert the annotations to fit with the Pangloss Player
   */
   convertToPlayerFormat(annotationsEditor){
+
+    annotationsEditor.children_annotations.sort((a, b) => a.rank - b.rank);
 
     var annotationsPlayer = {};
     var timeList = [];
@@ -47,12 +50,12 @@ export default class DocumentPreview extends Component {
     annotationsPlayer.TEXT.FORM = annotationsEditor.forms;
 
     annotationsEditor.forms.forEach((f)=>{
-      (!typeOf.text.forms.includes(f.kindOf)) && typeOf.text.forms.push(f.kindOf);
+      (typeOf.text.forms && !typeOf.text.forms.includes(f.kindOf)) && typeOf.text.forms.push(f.kindOf);
     });
 
     annotationsPlayer.TEXT.TRANSL = [];
     annotationsEditor.translations.forEach((t)=>{
-      (!typeOf.text.translations.includes(t.lang)) && typeOf.text.translations.push(t.lang);
+      (typeOf.text.translations && !typeOf.text.translations.includes(t.lang)) && typeOf.text.translations.push(t.lang);
       annotationsPlayer.TEXT.TRANSL.push({
         'xml:lang':t.lang,
         text:t.text
@@ -61,7 +64,7 @@ export default class DocumentPreview extends Component {
 
     annotationsPlayer.TEXT.NOTE = [];
     annotationsEditor.notes.forEach((n)=>{
-      (!typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
+      (typeOf.note.translations && !typeOf.note.translations.includes(n.lang)) && typeOf.note.translations.push(n.lang);
       annotationsPlayer.TEXT.NOTE.push({
         'xml:lang':n.lang,
         message:n.text,
@@ -136,6 +139,8 @@ export default class DocumentPreview extends Component {
       });
 
       if(s.children_annotations.length > 0){
+              s.children_annotations.sort((a, b) => a.rank - b.rank);
+
               sentence.W = [];
 
               s.children_annotations.forEach((w)=>{
@@ -175,7 +180,7 @@ export default class DocumentPreview extends Component {
 
                       word.id = sentence.id+w.type+w.rank;
 
-                      if(w.imageCoords!==null){
+                      if(w.imageCoords!==null && w.imageCoords[0]!==undefined){
                         //15/07/2022 : multi image : par convention on n'a qu'une boîte pour un mot
                         word.AREA = {};
                         word.AREA.image = "image"+w.imageCoords[0].image_id;
@@ -197,6 +202,9 @@ export default class DocumentPreview extends Component {
                       });
 
                       if(w.children_annotations.length > 0){
+                        
+                          w.children_annotations.sort((a, b) => a.rank - b.rank);
+
                           word.M = [];
 
                           w.children_annotations.forEach((m)=>{
@@ -456,8 +464,13 @@ export default class DocumentPreview extends Component {
 
 
       return (
+
         <div className="AppPlayer" key="AppPlayer"> 
+
             <Container>
+              <Box display="flex" bgcolor="info.default" color="info.contrastText" p={2}>
+                This is a document preview as it would be displayed in <Link href="https://pangloss.cnrs.fr" target="_blank"> Pangloss </Link> player
+              </Box>
               {this.props.recording && <Player file={{"type":"audio","url":'',"content":this.props.recording['TO_BASE64(content)']}} playerIsLoaded = {this.playerIsLoaded.bind(this)} />
 }
               <DisplayOptions displayOptions={this.props.displayOptions} options={typeOf} isWordList={this.state.isWordList} />

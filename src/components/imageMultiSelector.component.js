@@ -99,23 +99,25 @@ export default class ImageMultiSelector extends React.Component {
 
     // #21
     var image = new Image();
-    image.src = "data:image/png;base64,"+this.props.image["TO_BASE64(content)"];
+    //image.src = "data:image/png;base64,"+this.props.image["TO_BASE64(content)"];
+    image.src = "data:image/png;base64,"+window.imagesMap.filter((i)=>i.id === this.props.image.id)[0].content;
+    //image.src =   window.imagesMap["image"+this.props.key];
     const scaleX = image.naturalWidth / this.state.imageSelectorWidth;
     window.imageRatio = scaleX;
 
   }
  
   changeCoordinate = (coordinate, index, coordinates) => {
+    
     this.setState({
       coordinates,
     });
 
     var imageSelectionData=[];
 
-
     coordinates.forEach((c)=>{
       imageSelectionData.push({
-        imageId:this.props.image.id,
+        image_id:this.props.image.id,
         x:parseFloat(c.x.toFixed(2)),
         y:parseFloat(c.y.toFixed(2)),
         width:parseFloat(c.width.toFixed(2)),
@@ -151,6 +153,7 @@ export default class ImageMultiSelector extends React.Component {
 
         <MultiCrops
           src={"data:image/png;base64,"+this.props.image["TO_BASE64(content)"]}
+          //src={"data:image/png;base64,"+window.imagesMap["image"+this.props.image.id]}
           width={this.state.imageSelectorWidth}
           coordinates={this.state.coordinates}
           onChange={this.changeCoordinate}

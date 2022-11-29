@@ -86,3 +86,6 @@ region.wavesurfer-region[data-region-highlight] {
   cursor: help;
 }
 
+.react-draggable{
+  z-index: 10;
+}

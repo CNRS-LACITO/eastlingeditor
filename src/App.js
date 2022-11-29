@@ -18,9 +18,13 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import Grow from '@material-ui/core/Grow';
 import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
+import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import MenuIcon from '@material-ui/icons/Menu';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Box from '@material-ui/core/Box';
 
 import Snackbar from '@material-ui/core/Snackbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -41,13 +45,13 @@ const theme = createMuiTheme({
   palette: {
     type: 'light',
     primary: {
-      main: '#1d2654',
+      main: 'rgb(0, 120, 183)',
     },
     secondary: {
-      main: '#00a096',
+      main: '#dddddd',
     },
     background: {
-      default: '#ede7f6',
+      default: '#f7f7f8',
     },
   },
   typography: {
@@ -73,6 +77,7 @@ class App extends Component {
     this.logOut = this.logOut.bind(this);
 
     this.state = {
+      openUserMenu:false,
       currentUser: undefined,
       openMenu: false,
       anchorRef: React.createRef()
@@ -119,16 +124,53 @@ class App extends Component {
     }
   }
 
-  redirect=()=> {
+  redirect = () => {
     window.location.href = this.state.notificationLink;
   }
 
   render() {
     const { openMenu, anchorRef } = this.state;
+    const logoPath = (typeof this.state.currentUser === 'undefined') ? (window.location.origin+"/editor/img/Eastling_Bleu_BASELINE_2022.png"):(window.location.origin+"/editor/img/Eastling_Bleu_BASELINE_2022.png");
+    const logoHeight= (typeof this.state.currentUser === 'undefined') ? 100 : 54;
 
     return (
       <MuiThemeProvider theme={theme}>
       <div>
+        <AppBar 
+          position="static"
+          style={{backgroundColor:"#ffffff",boxShadow:"none"}}
+          >
+          <Toolbar>
+            <Box
+              component="img"
+              sx={{height: logoHeight}}
+              alt="Eastling logo"
+              src={logoPath}
+            />
+
+            <IconButton
+              edge="end"
+              aria-label="account of current user"
+              aria-control="menu-user"
+              aria-haspopup="true"
+            >
+              <ProfileIcon />
+            </IconButton>
+             <Menu
+                id="menu-user"
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem>My account</MenuItem>
+                <MenuItem>Log out</MenuItem>
+              </Menu>
+
+          </Toolbar>
+        </AppBar>
+
         <Button
           ref={anchorRef}
           aria-controls={openMenu ? 'menu-list-grow' : undefined}
@@ -224,11 +266,11 @@ class App extends Component {
               <Route path="/documents/:docId" component={Document} />
               <Route path="/documents" component={Documents} />
             </Switch>
-
           
         </Container>
 
       </div>
+
 
       </MuiThemeProvider>
     );

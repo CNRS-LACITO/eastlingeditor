@@ -12,8 +12,8 @@ import SplitIcon from '@material-ui/icons/PowerInput';
 import BeforeIcon from '@material-ui/icons/ArrowBack';
 import NextIcon from '@material-ui/icons/ArrowForward';
 
-
 import Chip from '@material-ui/core/Chip';
+import Rank from './document.annotation.rank.component';
 import Audio from './document.annotation.audio.component';
 import Image from './document.annotation.image.component';
 import Form from './document.annotation.form.component';
@@ -48,28 +48,46 @@ export default class DocumentAnnotation extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      data:this.props.data,
+      //data:props.data,
       loading:false,
       expanded: (this.props.data.type === 'T' || (window.currentAnnotationEdition && this.props.data.id ===window.currentAnnotationEdition.id))?'panel1':false,
       //forms:this.props.data.forms,
       //translations:this.props.data.translations,
-      children:this.props.data.children_annotations,
-      audioStart:this.props.data.audioStart,
-      audioEnd:this.props.data.audioEnd,
+      //children:this.props.data.children_annotations,
       openNewForm:false,
       openNewTranslation:false,
       openNewNote:false,
       openSplit:false,
       nextChildRank:0,
       openDeleteDialog:false,
-      notes:this.props.data.notes
+      audioKey:Date.now()
+      //notes:this.props.data.notes
     };
 
   }
 
-  handleExpand = (panel) => (event, isExpanded) => {
-    this.setState({expanded: isExpanded ? panel : false});
-  };
+  static getDerivedStateFromProps(props, state) {
+        if(props.data !== state.data){
+            //Change in props
+            return{
+                data: props.data
+            };
+        }
+        return null; // No change to state
+  }
+
+  getUrlParameter (sVar) {
+    return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(sVar).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+  }
+
+  buildUrl(id = null){
+      var params = new URLSearchParams(window.location.search);
+      params.set('tab',this.getUrlParameter("tab"));
+      //params.set('expanded',this.getUrlParameter("expanded"));
+      params.set('annotationId',(id === null)?this.props.annotationId:id);
+      var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + params.toString();
+      window.history.pushState('test','',newUrl);
+  }
 
 
   handleCloseDeleteDialog = (event) => {
@@ -175,126 +193,12 @@ export default class DocumentAnnotation extends React.Component {
 
   refresh = (type) => {
     //rafraîchit le contenu de l'annotation
-    console.log("refresh called "+type);
-
-    window.coordinates = undefined;
-    
-    type==="form" && this.setState({openNewForm:false});
-    type==="translation" && this.setState({openNewTranslation:false});
-
-    type==="form" && FormService.getAnnotationForms(this.state.data.id).then(
-      (response) => {
-        /*
-          this.setState({
-            data.forms:response.data
-          });
-          */
-          this.setState(prevState => ({
-              data: {                   // object that we want to update
-                  ...prevState.data,    // keep all other key-value pairs
-                  forms:response.data        // update the value of specific key
-              }
-          }));
-          this.props.annotationHasChanged();
-        },
-        error => {
-          if(error.response.status===401) this.props.history.push('/login');
-          this.setState({
-            loading:false
-          });
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          alert(resMessage);
-        });
-
-    type==="translation" && TranslationService.getAnnotationTranslations(this.state.data.id).then(
-      (response) => {
-        /*
-          this.setState({
-            translations:response.data
-          });*/
-          this.setState(prevState => ({
-              data: {                   // object that we want to update
-                  ...prevState.data,    // keep all other key-value pairs
-                  translations:response.data        // update the value of specific key
-              }
-          }));
-          this.props.annotationHasChanged();
-        },
-        error => {
-          if(error.response.status===401) this.props.history.push('/login');
-          this.setState({
-            loading:false
-          });
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          alert(resMessage);
-        });
-
-    type==="children" && AnnotationService.getAnnotationChildren(this.state.data.id).then(
-      (response) => {
-          /*this.setState({
-            children:response.data
-          });*/
-          this.setState(prevState => ({
-              data: {                   // object that we want to update
-                  ...prevState.data,    // keep all other key-value pairs
-                  children:response.data        // update the value of specific key
-              }
-          }));
-          this.props.refreshAnnotations();
-        },
-        error => {
-          if(error.response.status===401) this.props.history.push('/login');
-          this.setState({
-            loading:false
-          });
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          alert(resMessage);
-        });
-
-    type==="note" && AnnotationService.getAnnotationNotes(this.state.data.id).then(
-      (response) => {
-
-          this.setState(prevState => ({
-            notes:response.data        // update the value of specific key
-          }));
-          this.props.annotationHasChanged();
-        },
-        error => {
-          if(error.response.status===401) this.props.history.push('/login');
-          this.setState({
-            loading:false
-          });
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          alert(resMessage);
-        });
-
+    this.buildUrl();
+    this.props.showAnnotation(this.state.data["document_id"],this.state.data.id,true);
   }
 
   componentDidMount(){
+    /*
     var lastRank = (this.state.children && this.state.children.length > 0)
     ?
     Math.max.apply(Math, this.state.children.map(function(a) { return a.rank; }))
@@ -302,6 +206,15 @@ export default class DocumentAnnotation extends React.Component {
     0
     ;
     this.setState({nextChildRank:lastRank+1});
+*/
+    var lastRank = (this.state.data.children_annotations && this.state.data.children_annotations.length > 0)
+    ?
+    Math.max.apply(Math, this.state.data.children_annotations.map(function(a) { return a.rank; }))
+    :
+    0
+    ;
+    this.setState({nextChildRank:lastRank+1});
+
   }
 
 
@@ -311,35 +224,24 @@ export default class DocumentAnnotation extends React.Component {
     var annotationParent = this.props.parentAnnotations.filter(annotationParent => annotationParent.id === this.state.data.parent_id)[0];
     var annotationPrevNext = this.props.parentAnnotations.filter(annotation => (annotation.parent_id === annotationParent.id && annotation.type === this.state.data.type && annotation.rank === (this.state.data.rank + direction)));
 
+    var annotationPrevNext = this.props.parentAnnotations.filter(annotation => (annotation.parent_id === annotationParent.id && annotation.type === this.state.data.type));
+    annotationPrevNext = (direction === 1)?annotationPrevNext.filter(annotation => annotation.rank >= (this.state.data.rank + direction)).sort((a, b) => a.rank - b.rank):annotationPrevNext.filter(annotation => annotation.rank <= (this.state.data.rank + direction)).sort((a, b) => b.rank - a.rank);
+
     if(annotationPrevNext.length > 0){
       var idPrevNext = annotationPrevNext[0].id;
 
-      AnnotationService.get(this.state.data["document_id"],idPrevNext).then(
-          (response) => {
-              this.setState({
-                data:response,
-                children:response.children_annotations,
-                audioStart:response.audioStart,
-                audioEnd:response.audioEnd,
-                notes:response.notes
-              });
-            },
-            error => {
-              if(error.response.status===401) this.props.history.push('/login');
-              const resMessage =
-                (error.response &&
-                  error.response.data &&
-                  error.response.data.message) ||
-                error.message ||
-                error.toString();
+      this.buildUrl(idPrevNext);
+      this.props.showAnnotation(this.state.data["document_id"],idPrevNext);
 
-              alert(resMessage);
-            });
     }
-  
   }
 
   render() {
+
+
+    var parentAnnotationLabel = this.props.parentAnnotations.filter((p)=>p.id === this.state.data.parent_id);
+
+    var parentLabel = (this.state.data.type !== 'T' && parentAnnotationLabel.length===1)?parentAnnotationLabel[0].label:'';
 
     return (
       <div>
@@ -349,40 +251,40 @@ export default class DocumentAnnotation extends React.Component {
                 <Chip
                     label={this.state.data.type+this.state.data.rank}
                     size="small"
-                    color="primary"
+                    color="default"
                   />
               </Container>
 
               <Container>
-                <FormControl>
-                  <InputLabel htmlFor="select-parent-annotation">
-                    Parent annotation
-                  </InputLabel>
-                  <Select
-                    native
-                    value={this.state.data.parent_id}
-                    inputProps={{
-                      id: 'select-parent-annotation',
-                    }}
-                  >
-                    {this.props.parentAnnotations.map((a) => (
-                      <option key={a.id} value={a.id} nextChildRank={a.nextChildRank} disabled={this.state.data.type!==a.childrenType} hidden={this.props.type!==a.childrenType}>
-                        {a.label}
-                      </option>
-                    ))}
 
-                  </Select>
-                </FormControl>
+                <Chip
+                  size="small"
+                  color="primary"
+                  label={parentLabel}
+                  onClick={()=>this.props.showAnnotation(this.state.data.document_id,this.state.data.parent_id)}
+                />
+
+
               </Container>
 
-              <Container style={{display:"inline-flex"}}>
-                <IconButton title="Previous" aria-label="Previous" onClick={() => this.navigatePrevNext(-1)}>
-                  <BeforeIcon />
-                </IconButton>
-                <IconButton title="Next" aria-label="Next" onClick={() => this.navigatePrevNext(1)}>
-                  <NextIcon />
-                </IconButton>
+              <Container>
+                <Rank
+                  annotationId={this.state.data.id}
+                  rank={this.state.data.rank}
+                  annotationHasChanged={this.props.annotationHasChanged}
+                >
+                </Rank>
               </Container>
+
+              {(1===1) && <Container style={{display:"inline-flex"}}>
+                  <IconButton title="Previous" aria-label="Previous" onClick={() => this.navigatePrevNext(-1)}>
+                    <BeforeIcon />
+                  </IconButton>
+                  <IconButton title="Next" aria-label="Next" onClick={() => this.navigatePrevNext(1)}>
+                    <NextIcon />
+                  </IconButton>
+                </Container>
+              }
 
             </Grid>
 
@@ -390,13 +292,15 @@ export default class DocumentAnnotation extends React.Component {
               <Container item xs={6}>
                 {
                   (this.state.data.type !== 'T') && (window.wavesurfer !== null) &&
-                  <Audio 
+                  <Audio
+                    key={this.state.audioKey}
                     annotationHasChanged={this.props.annotationHasChanged} 
                     handleEditionState={this.props.handleEditionState} 
                     audioStart={this.state.data.audioStart} 
                     audioEnd={this.state.data.audioEnd} 
                     annotationId={this.state.data.id} 
-                    annotationLabel={this.state.data.type+this.state.data.rank} 
+                    annotationLabel={this.state.data.type+this.state.data.rank}
+
                   />
                 }
               </Container>
@@ -431,6 +335,8 @@ export default class DocumentAnnotation extends React.Component {
                   hidden={!this.state.openNewForm}
                   available_lang={this.props.available_kindOf}
                   />
+                  
+                  {/*this.state.forms && this.state.forms.length > 0 && this.state.forms.map((form) => (*/}
                   {this.state.data.forms && this.state.data.forms.length > 0 && this.state.data.forms.map((form) => (
                     <Form
                       data={form}
@@ -489,7 +395,7 @@ export default class DocumentAnnotation extends React.Component {
                     hidden={!this.state.openNewNote}
                     available_lang={this.props.available_lang}
                     />
-                  {this.state.notes && this.state.notes.length > 0 && this.state.notes.map((note) => (
+                  {this.state.data.notes && this.state.data.notes.length > 0 && this.state.data.notes.map((note) => (
                       <Note
                         data={note}
                         refreshNotesParent={() => this.refresh('note')}
@@ -499,25 +405,25 @@ export default class DocumentAnnotation extends React.Component {
                     ))}
                 </Container>
 
-
-              {(this.state.data.type==="S" && this.state.data.children_annotations.length===0) && <Container item xs={12}>
+              {(this.state.data.type !== 'M' && this.state.data.children_annotations && this.state.data.children_annotations.length===0) && <Container item xs={12}>
                   <Typography variant="h5" gutterBottom>
                   </Typography>
                   <Chip
                   clickable
                     icon=<SplitIcon />
-                    label="words auto-split"
+                    label="auto-split"
                     size="small"
                     color="primary"
                     onClick={this.openSplitForm}
                   />
                   <SplitForm 
-                  parentId={this.state.data.id} 
+                  parentId={this.state.data.id}
+                  parentType={this.state.data.type}
                   refreshAnnotations={this.props.refreshAnnotations} 
                   hidden={!this.state.openSplit}
-                  nbWords={(this.state.data.forms.length>0)?this.state.data.forms[0].text.split(' ').length:2}
-                  audioStart={this.state.audioStart}
-                  audioEnd={this.state.audioEnd}
+                  nbSegments={(this.state.data.forms.length>0)?this.state.data.forms[0].text.split(' ').length:2}
+                  audioStart={this.state.data.audioStart}
+                  audioEnd={this.state.data.audioEnd}
                   imageCoords={this.state.data.imageCoords}
                   formToSplit = {(this.state.data.forms.length>0)?this.state.data.forms[0].text:""}
                   kindOf = {(this.state.data.forms.length>0)?this.state.data.forms[0].kindOf:""}
@@ -525,6 +431,23 @@ export default class DocumentAnnotation extends React.Component {
                   />
               </Container>
               }
+
+              <Container>
+              <Chip label="children" size="small" color="primary"
+              />
+              {(this.state.data.type !== 'M' && this.state.data.children_annotations && this.state.data.children_annotations.length>0) && 
+                  this.state.data.children_annotations.sort((a, b) => a.rank - b.rank).map((item,i)=>{
+                    return <Chip
+                       key={item.id}
+                       clickable
+                         label={item.type+item.rank}
+                         size="small"
+                         color="primary"
+                         onClick={() => this.props.showAnnotation(this.state.data.document_id,item.id)}
+                       />
+                  })
+              }
+              </Container>
 
                 {this.state.data.type !== 'T' && 
                   <IconButton color="primary" title="Delete" aria-label="Delete" onClick={this.handleOpenDeleteDialog} title="Delete annotation">

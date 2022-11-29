@@ -14,7 +14,7 @@ export default class Form extends TextItem {
 
 
   render() {
-    console.log('render form');
+
     return (
       <TextItem 
       type="form" 

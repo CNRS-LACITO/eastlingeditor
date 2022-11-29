@@ -24,10 +24,10 @@ class Audio extends Component {
     this.state = {
       playing: false,
       inputEnabled:false,
-      originalStart:props.audioStart,
-      originalEnd:props.audioEnd,
-      start:props.audioStart,
-      end:props.audioEnd
+      originalStart:this.props.audioStart,
+      originalEnd:this.props.audioEnd,
+      start:this.props.audioStart,
+      end:this.props.audioEnd
     };
 
   }
@@ -35,10 +35,27 @@ class Audio extends Component {
   componentDidMount(){
   }
 
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+        if(!prevState.inputEnabled && ((prevState.start !== nextProps.audioStart) || (nextProps.audioEnd !== prevState.end))) {
+          return{
+            originalStart:nextProps.audioStart,
+            originalEnd:nextProps.audioEnd,
+            start:nextProps.audioStart,
+            end:nextProps.audioEnd,
+            //inputEnabled:props.inputEnabled
+          };
+        }
+    
+        return null;
+    }
+
   handleEdit = () => {
+
     this.setState({inputEnabled:!this.state.inputEnabled});
     window.currentAnnotationEdition = {id:this.props.annotationId,label:this.props.annotationLabel};
     //window.wavesurfer.disableDragSelection();
+    console.log(window.currentAnnotationEdition);
     window.wavesurfer.regions.list[this.props.annotationId] && window.wavesurfer.regions.list[this.props.annotationId].remove();
            window.wavesurfer.addRegion({
             id:this.props.annotationId,
@@ -55,6 +72,7 @@ class Audio extends Component {
   handleMouseSelection = () => {
     this.props.handleEditionState(true,"audio",{annotationLabel:this.props.annotationLabel,annotationId:this.props.annotationId,start:this.state.start,end:this.state.end});
     //this.props.handleExpand('panel1');
+    this.setState({inputEnabled:false});
   };
 
   handleCancel = () => {
@@ -69,10 +87,13 @@ class Audio extends Component {
   };
 
   onStartChange = (event) => {
+    console.log(event.target);
     this.setState({start:event.target.value});
+
   }
 
   onEndChange = (event) => {
+    console.log(event.target);
     this.setState({end:event.target.value});
   }
 
@@ -115,64 +136,44 @@ class Audio extends Component {
 
     if(prevProps.annotationId !== this.props.annotationId)
       this.setState({
-        originalStart:this.props.audioStart,
-        originalEnd:this.props.audioEnd,
-        start:this.props.audioStart,
-        end:this.props.audioEnd
+        inputEnabled:false
       });
+
   }
+
 
   render() {
 
-       window.wavesurfer.regions.list[this.props.annotationId] && window.wavesurfer.regions.list[this.props.annotationId].remove();
-           window.wavesurfer.addRegion({
-            id:this.props.annotationId,
-            start: this.state.start,
-            end: this.state.end,
-            drag: false,
-            resize: false,
-            color:"rgba(0,0,0,0.2)",
-          });
-
-      window.wavesurfer.markers.markers
-      .filter((m)=>m.label ===this.props.annotationLabel)
-      .forEach((marker,index)=>{window.wavesurfer.markers.remove(index);});
-
-      //window.wavesurfer.markers.remove
-      this.props.annotationLabel &&
-        window.wavesurfer.addMarker({
-          time: this.state.start,
-          label: this.props.annotationLabel,
-          color: (this.props.annotationLabel.substring(0,1)==="S")?"red":"blue",
-          position: (this.props.annotationLabel.substring(0,1)==="S")?"bottom":"top"
-        });
-    
-
     return (
       <Container>
-        {this.state.loading && <CircularProgress size="1.5rem" />}
-        <Chip label="audio" size="small" />
-          <IconButton color="primary" aria-label="Play" onClick={this.handlePlay}>
+          {this.state.loading && <CircularProgress size="1.5rem" />}
+
+          <Chip label="audio" size="small" />
+
+          {this.state.start > 0 && <IconButton color="primary" aria-label="Play" onClick={this.handlePlay}>
             {!this.state.playing ? <PlayIcon /> : <PauseIcon /> }
           </IconButton>
+          }
           <TextField
             id={"start"+this.props.id}
             label="Start"
             disabled={!this.state.inputEnabled}
-            value={this.state.start}
+            value={this.state.start || ''}
             onChange={this.onStartChange}
             size="small"
             style = {{width: "5rem"}}
+            onMouseDown={(e) => {e.stopPropagation()}} 
           />
           
           <TextField
             id={"end"+this.props.id}
             label="End"
             disabled={!this.state.inputEnabled}
-            value={this.state.end}
+            value={this.state.end || ''}
             onChange={this.onEndChange}
             size="small"
             style = {{width: "5rem"}}
+            onMouseDown={(e) => {e.stopPropagation()}}
           />
             {!this.state.inputEnabled?
             <IconButton title="Edit" color="primary" aria-label="Edit" onClick={this.handleEdit}>

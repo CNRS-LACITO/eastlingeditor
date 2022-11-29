@@ -3,6 +3,7 @@ import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
 import DocumentService from "../services/document.service";
 import AnnotationService from "../services/annotation.service";
+import HelperService from "../services/helper.service";
 
 import { DataGrid } from '@material-ui/data-grid';
 import Container from '@material-ui/core/Container';
@@ -28,6 +29,7 @@ import Chip from '@material-ui/core/Chip';
 import Avatar from '@material-ui/core/Avatar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { withRouter } from 'react-router-dom';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 class Documents extends Component {
   constructor(props) {
@@ -41,7 +43,8 @@ class Documents extends Component {
       typeOfDocument: "TEXT",
       langCorpus: "",
       loading: false,
-      documentToDelete: null
+      documentToDelete: null,
+      langISOCodes:[],
     };
 
     if(AuthService.getCurrentUser() === null)
@@ -74,8 +77,9 @@ class Documents extends Component {
 
   handleLangChange = (event) => {
     this.setState({
-        langCorpus: event.target.value
+        langCorpus: event.target.innerHTML
       });
+    //console.log(event.target.innerHTML,this.state.langCorpus);
   };
 
   handleTypeChange = (event) => {
@@ -189,6 +193,37 @@ class Documents extends Component {
 
   }
 
+    onCorpusChange = (e) => {
+
+    (e!=null) && (e.target.value.length >=2) && (e.target.value.length <=3) && HelperService.getLangISOCodes(e.target.value).then(
+      (response) => {
+
+          this.setState({
+            langISOCodes:response.data
+          });
+
+        },
+        error => {
+          this.setState({
+            loading:false
+          });
+
+          console.log(error);
+
+          //if(error.response.status===401) this.props.history.push('/login');
+
+          const resMessage =
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
+            error.message ||
+            error.toString();
+
+          if(error.response.status!==404) alert(resMessage);
+        });
+
+  }
+
   render() {
     if(this.state.currentUser !== null){
 
@@ -210,7 +245,8 @@ class Documents extends Component {
                 key={item.id}
                 avatar={<Avatar>{item.lang.toUpperCase()}</Avatar>}
                 label={item.title} 
-                color="secondary"
+                color="primary"
+                variant="outlined"
                 />
               )
             }
@@ -220,7 +256,7 @@ class Documents extends Component {
         {
           field: 'lang',
           headerName: 'Language',
-          width: 120,
+          width: 220,
           editable: true,
           renderCell: (params) => (
             <Container
@@ -232,7 +268,8 @@ class Documents extends Component {
             <Chip
               key={params.id}
               label={params.value} 
-              color="secondary"
+              color="primary"
+              variant="outlined"
             />
 
             </Container>
@@ -263,10 +300,10 @@ class Documents extends Component {
             <IconButton color="primary" title="Edit document" aria-label="Edit document" onClick={()=>this.props.history.push("/documents/" + params.id + "?tab=0")}>
                 <EditIcon />
             </IconButton>
-            <IconButton color="primary" title="Download document" aria-label="Download document">
+            <IconButton disabled color="primary" title="Download document" aria-label="Download document">
               <CloudDownloadIcon />
             </IconButton>
-            <IconButton color="primary" title="Send document for deposit" aria-label="Send document for deposit">
+            <IconButton disabled color="primary" title="Send document for deposit" aria-label="Send document for deposit">
               <SendIcon />
             </IconButton>
             <IconButton color="primary" title="Delete document" aria-label="Delete document" onClick={onClick}>
@@ -296,7 +333,7 @@ class Documents extends Component {
             </h3>
           </header>
           <div>
-            <div style={{ height: 600, width: '80%' }}>
+            <div style={{ height: 600, width: '100%' }}>
               <IconButton color="primary" title="Create a new document" aria-label="Create a new document" onClick={this.handleOpenCreateDialog}>
                   <AddIcon />
               </IconButton>
@@ -308,14 +345,15 @@ class Documents extends Component {
                   </DialogContentText>
                     <form noValidate>
                       <div>
-                        <TextField
-                          autoFocus
-                          margin="dense"
-                          id="name"
-                          label="Language ISO 639-3 Code"
-                          type="text"
-                          fullWidth
+                        <Autocomplete
+                          id="langCorpus"
+                          freeSolo="true"
+                          options={this.state.langISOCodes.map((lang) => lang.code_langue_sujet + " / "+ lang.sujet)}
+                          onInputChange={this.onCorpusChange}
                           onChange={this.handleLangChange}
+                          renderInput={(params) => (
+                            <TextField {...params} label="Corpus" margin="normal" variant="outlined" />
+                          )}
                         />
                       </div>
                       <FormControl>
@@ -365,7 +403,7 @@ class Documents extends Component {
                 <DataGrid
                   rows={docs}
                   columns={columns}
-                  pageSize={10}
+                  pageSize={12}
                   checkboxSelection
                   disableSelectionOnClick
                 />
