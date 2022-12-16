@@ -24,10 +24,10 @@ class Audio extends Component {
     this.state = {
       playing: false,
       inputEnabled:false,
-      originalStart:this.props.audioStart,
-      originalEnd:this.props.audioEnd,
-      start:this.props.audioStart,
-      end:this.props.audioEnd
+      //originalStart:this.props.audioStart,
+      //originalEnd:this.props.audioEnd,
+      //start:this.props.audioStart,
+      //end:this.props.audioEnd
     };
 
   }
@@ -99,19 +99,29 @@ class Audio extends Component {
 
 
   handleSubmit = () => {
+
     this.setState({
       loading:true,
       inputEnabled:false,
-      originalStart:this.state.start,
-      originalEnd:this.state.end,
+      /*originalStart:this.state.start,
+      originalEnd:this.state.end,*/
     });
+
+
+    var newData ={
+      audioStart:this.state.start,
+      audioEnd:this.state.end
+    };
 
     AnnotationService.update(this.props.annotationId,{audioStart:this.state.start,audioEnd:this.state.end}).then(
       (response) => {
+          this.props.handleDataChange();
+
           this.setState({
             loading:false
           });
-          //this.props.annotationHasChanged();
+
+
           window.currentAnnotationEdition=null;
         },
         error => {

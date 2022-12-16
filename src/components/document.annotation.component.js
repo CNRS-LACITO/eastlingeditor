@@ -76,6 +76,12 @@ export default class DocumentAnnotation extends React.Component {
         return null; // No change to state
   }
 
+  handleDataChange = ()=>{
+
+    this.refresh();
+
+  };
+
   getUrlParameter (sVar) {
     return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(sVar).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
   }
@@ -238,6 +244,7 @@ export default class DocumentAnnotation extends React.Component {
 
   render() {
 
+    console.log(this.state.data);
 
     var parentAnnotationLabel = this.props.parentAnnotations.filter((p)=>p.id === this.state.data.parent_id);
 
@@ -294,13 +301,12 @@ export default class DocumentAnnotation extends React.Component {
                   (this.state.data.type !== 'T') && (window.wavesurfer !== null) &&
                   <Audio
                     key={this.state.audioKey}
-                    annotationHasChanged={this.props.annotationHasChanged} 
+                    handleDataChange={this.handleDataChange} 
                     handleEditionState={this.props.handleEditionState} 
                     audioStart={this.state.data.audioStart} 
                     audioEnd={this.state.data.audioEnd} 
                     annotationId={this.state.data.id} 
                     annotationLabel={this.state.data.type+this.state.data.rank}
-
                   />
                 }
               </Container>
