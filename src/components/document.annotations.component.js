@@ -656,6 +656,7 @@ class DocumentAnnotations extends React.Component {
    * Get all document annotations from database and refresh the page content
    */
   refreshAnnotations = (onlyTree = false,annotationId = null) => {
+    console.log(annotationId);
 
     var canvasList = [];
 
@@ -678,7 +679,7 @@ class DocumentAnnotations extends React.Component {
             window.coordinates = undefined;
           }
 
-          if(annotationId>0) this.showAnnotation(this.props.documentId,annotationId);
+          if(annotationId>0) this.showAnnotation(this.props.documentId,annotationId,true);
         },
         error => {
           if(error.response.status===401) this.props.history.push('/login');
@@ -722,11 +723,6 @@ class DocumentAnnotations extends React.Component {
    loadRegions(annotations){
 
       var that = this;
-      /*
-      window.wavesurfer.regions.list
-      .filter((m)=>m.indexOf('wavesurfer_')>=0)
-      .forEach((m)=>m.remove());
-      */
 
       //Adapt to the recursive structure of annotation --> children annotations
       window.wavesurfer && annotations.forEach(function(annotation) {

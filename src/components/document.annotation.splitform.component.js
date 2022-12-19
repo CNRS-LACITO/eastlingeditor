@@ -20,7 +20,7 @@ class SplitForm extends Component {
       splitChar:" ",
       loading:false,
       verticalImageSplit:false,
-      splittedForm:""
+      splittedForm:this.props.formToSplit.split(" ").join(' / ')
     };
 
   }
@@ -107,8 +107,7 @@ class SplitForm extends Component {
     var isOnFirstImage = true;
     var imageToSplit;
     var j = 0;
-    //var splittedFormTimeKey = [];
-    //var splittedFormImageKey = [];
+
 
     for(var k = 0; k < this.state.nbSegments ;k++){
 
@@ -166,9 +165,6 @@ class SplitForm extends Component {
         audioEnd:parseFloat(audioSplitEnd.toFixed(2))
       };
 
-      //splittedFormTimeKey[audioSplitStart.toFixed(2)] = splittedForm[k];
-      //splittedFormImageKey[x1] = splittedForm[k];
-
       var checkToCreate = this.state.nbSegments;
       var countCreated = 0;
       
@@ -183,7 +179,7 @@ class SplitForm extends Component {
                   this.setState({
                     loading:false
                   });
-                  this.props.refreshAnnotations();
+                  this.props.refreshAnnotations(false,this.props.parentId);
                 }
               },
               error => {
@@ -239,8 +235,9 @@ class SplitForm extends Component {
 
 
   render() {
+    console.log("SplitForm rendered");
+    
     var visibility = (this.props.hidden)?"none":"";
-    //var splittedForm = this.props.formToSplit.split(this.state.splitChar).join(' / ');
 
     return (
        
