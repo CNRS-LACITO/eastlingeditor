@@ -236,8 +236,6 @@ export default class DocumentAnnotation extends React.Component {
 
   render() {
 
-    console.log(this.state.data);
-
     var parentAnnotationLabel = this.props.parentAnnotations.filter((p)=>p.id === this.state.data.parent_id);
 
     var parentLabel = (this.state.data.type !== 'T' && parentAnnotationLabel.length===1)?parentAnnotationLabel[0].label:'';
