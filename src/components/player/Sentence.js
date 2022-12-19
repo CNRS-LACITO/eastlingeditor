@@ -108,19 +108,28 @@ class Sentence extends React.Component {
   	
     if(this.props.s.AREA !== undefined && this.props.s.AREA !== null){
 
-/*
-    	var coords = this.props.s.AREA[0].coords.split(',');
-	    var delta_x = coords[0];//offset for x, image positioning
-	    var delta_y = coords[1];//offset for y, image positioning
-	    
-*/
+			//19/12/2022 : gestion multi-area
+
 			var delta_x = [];
 	    var delta_y = [];
 
-	    this.props.s.AREA.forEach((a) => {
+	    this.props.s.AREA.forEach((a,imageAreaIndex) => {
 	    	var coords = a.coords.split(',');
-	    	delta_x[a.image] = coords[0];//offset for x, image positioning
-	    	delta_y[a.image] = coords[1];//offset for y, image positioning
+
+	    	if(delta_x[a.image]===undefined) 
+	    		delta_x[a.image]=[];
+
+
+				if(delta_y[a.image]===undefined) 
+					delta_y[a.image]=[];
+
+	    	delta_x[a.image][imageAreaIndex] = coords[0];//offset for x, image positioning
+	    	delta_y[a.image][imageAreaIndex] = coords[1];//offset for y, image positioning
+
+	    	delta_x[a.image][imageAreaIndex] /= coords[4];
+	    	delta_y[a.image][imageAreaIndex] /= coords[4];
+
+
 	    });
 
 	}
@@ -137,8 +146,8 @@ class Sentence extends React.Component {
 
 		    	if(w.M !== undefined && w.M !== null){
 
-					var morphemes = [];
-					var divWord;
+						var morphemes = [];
+						var divWord;
 
 
 		    		if(w.M.length>0){
@@ -170,7 +179,29 @@ class Sentence extends React.Component {
 		    		}
 
 		    			if(w.AREA !== undefined && w.AREA !== null){
-			        	var coords = w.AREA.coords.split(',');
+		    				//01/12/2022 _ bug multiimage
+		    				var coords = w.AREA.coords.split(',');
+		    				var ratio = 1;
+		    				if(coords[4]!==undefined) ratio = 1/coords[4]; //bug si pas de ratio intégré lors des anciens imports
+
+			        	var imageAreaIndex = 0;
+								var minDiff = 100000;
+
+								this.props.s.AREA.forEach((imageArea,index)=>{
+									var diff = Math.abs(w.AREA.coords.split(',')[1]-imageArea.coords.split(',')[1]);
+
+									if(diff < minDiff){
+										minDiff = diff;
+										imageAreaIndex = index;
+									}
+
+								});
+
+			        	coords[0] *= ratio;
+			        	coords[1] *= ratio;
+			        	coords[2] *= ratio;
+			        	coords[3] *= ratio;
+
 				        coords[0] -= delta_x[w.AREA.image];
 				        coords[1] -= delta_y[w.AREA.image];
 								coords[2] -= delta_x[w.AREA.image];
@@ -191,9 +222,12 @@ class Sentence extends React.Component {
 								      word = (w.FORM[0]!==undefined) ? w.FORM[0].text:"";
 								}
 
-				        canvas.push(
+								if(canvas[imageAreaIndex]===undefined) canvas[imageAreaIndex]=[];
+
+								canvas[imageAreaIndex].push(
 				        	<canvas 
 				        		image={w.AREA.image}
+				        		imageAreaIndex = {imageAreaIndex}
 				        		title={word} 
 				        		style={canvasStyle} 
 				        		wordid={w.id} 
@@ -201,9 +235,12 @@ class Sentence extends React.Component {
 				        		onClick={()=>document.getElementById(w.id).click()} >
 				        		</canvas>
 				        );
+
+////////////////////
+								
 				        
 			        }
-		    	}else{
+		    	}else{ //if has no Morpheme exist
 
 		    		// Get note(s) of the word
 					this.getNotes(w,notesJSON);
@@ -214,10 +251,34 @@ class Sentence extends React.Component {
 
 			        if(w.AREA !== undefined && w.AREA !== null){
 			        	var coords = w.AREA.coords.split(',');
-				        coords[0] -= delta_x[w.AREA.image];
-				        coords[1] -= delta_y[w.AREA.image];
-								coords[2] -= delta_x[w.AREA.image];
-				        coords[3] -= delta_y[w.AREA.image];
+
+			        	//01/12/2022 _ bug multiimage
+		    				var ratio = 1;
+		    				ratio = 1/coords[4];
+		    				console.log(ratio);
+
+		    				var imageAreaIndex = 0;
+								var minDiff = 100000;
+
+								this.props.s.AREA.forEach((imageArea,index)=>{
+									var diff = Math.abs(w.AREA.coords.split(',')[1]-imageArea.coords.split(',')[1]);
+
+									if(diff < minDiff){
+										minDiff = diff;
+										imageAreaIndex = index;
+									}
+
+								});
+
+			        	coords[0] *= ratio;
+			        	coords[1] *= ratio;
+			        	coords[2] *= ratio;
+			        	coords[3] *= ratio;
+
+				        coords[0] -= delta_x[w.AREA.image][imageAreaIndex];
+				        coords[1] -= delta_y[w.AREA.image][imageAreaIndex];
+								coords[2] -= delta_x[w.AREA.image][imageAreaIndex];
+				        coords[3] -= delta_y[w.AREA.image][imageAreaIndex];
 
 				        //var newCoords = coords.join(',');
 				        var canvasStyle = {
@@ -234,9 +295,12 @@ class Sentence extends React.Component {
 								      word = (w.FORM[0]!==undefined) ? w.FORM[0].text:"";
 								}
 
-								canvas.push(
+								if(canvas[imageAreaIndex]===undefined) canvas[imageAreaIndex]=[];
+
+								canvas[imageAreaIndex].push(
 				        	<canvas 
 				        		image={w.AREA.image}
+				        		imageAreaIndex = {imageAreaIndex}
 				        		title={word} 
 				        		style={canvasStyle} 
 				        		wordid={w.id} 
@@ -244,6 +308,7 @@ class Sentence extends React.Component {
 				        		onClick={()=>document.getElementById(w.id).click()} >
 				        		</canvas>
 				        );
+
 
 			        }
 		    	}	
@@ -261,6 +326,17 @@ class Sentence extends React.Component {
 	 	notes.push(<Note id={n.id} note={n.note} hidden={n.hidden} lang={n.lang}></Note>);
 	 });
 
+	 var pictures = [];
+
+	 this.props.s.AREA.forEach((imageArea,imageAreaIndex)=>{
+	 	pictures.push(<Picture 
+	      			sentenceId={this.props.s.id} 
+	      			imageSrc={this.props.imageSrc} 
+	      			canvas={canvas[imageAreaIndex]} 
+	      			areaIndex={imageAreaIndex}
+	      			area={imageArea} />);
+	 });
+
     
     var avatarStyle={
     	'backgroundColor': blue[800],
@@ -276,11 +352,7 @@ class Sentence extends React.Component {
 	      <CardContent>  	
 	      		{(this.props.s.AREA !== undefined) ? 
 	      		(
-	      		<Picture 
-	      			sentenceId={this.props.s.id} 
-	      			imageSrc={this.props.imageSrc} 
-	      			canvas={canvas} 
-	      			area={this.props.s.AREA} />
+	      		pictures
 	      		):(<div></div>)
 	      		}
 	       	
