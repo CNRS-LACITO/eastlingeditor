@@ -17,14 +17,25 @@ class SplitForm extends Component {
     super(props);
     this.state = {
       nbSegments:this.props.nbSegments,
+      splitChar:" ",
       loading:false,
-      verticalImageSplit:false
+      verticalImageSplit:false,
+      splittedForm:""
     };
 
   }
 
   onTextChange = (event) => {
     this.setState({nbSegments:event.target.value});
+  }
+
+  onSplitCharChange = (event) => {
+
+    event.target.value.length < 2 && this.setState({
+      splitChar:event.target.value,
+      splittedForm:this.props.formToSplit.split(event.target.value).join(' / '),
+      nbSegments:this.props.formToSplit.split(event.target.value).length
+    });
   }
 
   componentDidMount(){
@@ -50,7 +61,8 @@ class SplitForm extends Component {
     separators['S']=' ';
     separators['W']='-';
 
-    const splittedForm = this.props.formToSplit.split(separators[this.props.parentType]);
+    //const splittedForm = this.props.formToSplit.split(separators[this.props.parentType]);
+    const splittedForm = this.props.formToSplit.split(this.state.splitChar);
     var audioStep = 0;
     var imageStep = 0;
     var imageWidth = 0;
@@ -228,12 +240,18 @@ class SplitForm extends Component {
 
   render() {
     var visibility = (this.props.hidden)?"none":"";
-    var splittedForm = this.props.formToSplit.split(' ').join(' / ');
+    //var splittedForm = this.props.formToSplit.split(this.state.splitChar).join(' / ');
 
     return (
        
       <Container style={{display:visibility}}>
 
+              <TextField
+                label="Splitting character"
+                placeholder="Splitting character"
+                value={this.state.splitChar}
+                onChange={this.onSplitCharChange}
+              />
               <TextField
                 label="Number of segments"
                 placeholder="Number of segments"
@@ -252,7 +270,7 @@ class SplitForm extends Component {
                 }
 
                 <p>
-                  <small>{splittedForm}</small>
+                  <small>{this.state.splittedForm}</small>
                 </p>
       </Container>
 

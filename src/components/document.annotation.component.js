@@ -204,15 +204,7 @@ export default class DocumentAnnotation extends React.Component {
   }
 
   componentDidMount(){
-    /*
-    var lastRank = (this.state.children && this.state.children.length > 0)
-    ?
-    Math.max.apply(Math, this.state.children.map(function(a) { return a.rank; }))
-    :
-    0
-    ;
-    this.setState({nextChildRank:lastRank+1});
-*/
+
     var lastRank = (this.state.data.children_annotations && this.state.data.children_annotations.length > 0)
     ?
     Math.max.apply(Math, this.state.data.children_annotations.map(function(a) { return a.rank; }))
