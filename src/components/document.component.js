@@ -80,10 +80,8 @@ class Document extends Component {
   }
 
   refreshDocument = () => {
-    var oai_primary = this.getUrlParameter("oai_primary");
-    var oai_secondary = this.getUrlParameter("oai_secondary");
-
-    if(oai_primary && oai_secondary) alert('cocoon');
+    //URL requested stored if not logged in for redirection after login
+    window.intendedUrl = this.props.match.url;
 
     var tabId = parseInt(this.getUrlParameter("tab"));
     var expanded = this.getUrlParameter("expanded");
@@ -95,7 +93,8 @@ class Document extends Component {
         if(localStorage.key(i).indexOf('image')===0) localStorage.removeItem(localStorage.key(i));
       }
 
-      DocumentService.get(this.props.match.params.docId).then(
+      //cas du document créé dans Eastling
+      (this.props.match.params.docId) && DocumentService.get(this.props.match.params.docId).then(
         response => {
           if(typeof response === 'object'){
 
@@ -142,6 +141,61 @@ class Document extends Component {
               error.toString(),
               loading:false
           });
+        }
+      );
+
+      //cas du document ouvert depuis Pangloss/CoCoon
+      (this.props.match.params.oaiPrimary && this.props.match.params.oaiSecondary) && DocumentService.getByOAI(this.props.match.params.oaiPrimary,this.props.match.params.oaiSecondary).then(
+        response => {
+          if(typeof response === 'object'){
+
+            var typeOf = {};
+            typeOf.text = {}; typeOf.text.transcriptions = []; typeOf.text.translations = [];
+            typeOf.sentence = {}; typeOf.sentence.transcriptions = []; typeOf.sentence.translations = [];
+            typeOf.word = {}; typeOf.word.transcriptions = []; typeOf.word.translations = [];
+            typeOf.morpheme = {}; typeOf.morpheme.transcriptions = []; typeOf.morpheme.translations = [];
+            typeOf.note = {}; typeOf.note.translations = [];
+
+            this.parseTypeOf(response.annotations[0],typeOf);
+
+            response.typeOf = typeOf;
+
+            response.images.forEach(function(image,index){
+                //window.imagesMap["image"+image.id] = image["TO_BASE64(content)"];
+                window.imagesMap.push({
+                  id:image.id,
+                  content:image["TO_BASE64(content)"],
+                  filename:image.rank+'_'+image.filename
+                });
+
+            });
+
+            this.setState({
+              currentDocument:response,
+              typeOf:typeOf,
+              loading:false,
+              value:tabId,
+              expanded:(expanded==='true'),
+              //activeAnnotationId:activeAnnotationId,
+              title:response.titles[0]!==undefined?response.titles[0].title:""
+            });
+
+          }
+
+        },
+        error => {
+          if(error.response.status===401){
+            this.props.history.push('/login');
+          }else{
+            this.setState({
+              currentDocument:
+                (error.response && error.response.data) ||
+                error.message ||
+                error.toString(),
+                loading:false
+            });
+          }
+
         }
       );
   }

@@ -656,7 +656,6 @@ class DocumentAnnotations extends React.Component {
    * Get all document annotations from database and refresh the page content
    */
   refreshAnnotations = (onlyTree = false,annotationId = null) => {
-    console.log(annotationId);
 
     var canvasList = [];
 

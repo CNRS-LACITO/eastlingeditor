@@ -21,10 +21,19 @@ class DocumentService {
 
   	}
 
-  	get(docId) {
+	get(docId) {
 	    return axios.get(API_URL + 'documents/' + docId, { headers: authHeader() })
 	      .then(response => response.data);
 	  }
+
+	getByOAI(oaiPrimary,oaiSecondary) {
+	    return axios.get(API_URL + 'documents/oai/'+ oaiPrimary + "/" + oaiSecondary, { headers: authHeader() })
+	      .then(response => response.data);
+	  }
+
+//???????????????TODO : reporter dans une seule requête vers l'API et tout traiter en PHP ? oui car pas d'interactions avec le user !!!
+
+/////////////////////////////////////////////////
 
   	create(lang, type) {
   		let formData = new FormData();

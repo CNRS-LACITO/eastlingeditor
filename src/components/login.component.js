@@ -102,8 +102,14 @@ class Login extends Component {
 
       AuthService.login(this.state.username, this.state.password).then(
         () => {
-          this.props.history.push("/documents");
+          if(window.intendedUrl){
+            this.props.history.push(window.intendedUrl)
+          }else{
+            this.props.history.push("/documents");
+          }
+          window.intendedUrl = "";
           window.location.reload();
+
         },
         error => {
           const resMessage =

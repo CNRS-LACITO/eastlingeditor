@@ -136,7 +136,14 @@ class DocumentResources extends Component {
       });
 
 
-      (type === 'AUDIO' || type === 'VIDEO') && this.state.hasRecording && alert("You can attach only one recording to the document");
+      if ((type === 'AUDIO' || type === 'VIDEO') && this.state.hasRecording){
+        alert("You can attach only one recording to the document");
+        this.setState({
+          loading:false,
+          openAddDialog:false
+        });
+      }
+      
   };
 
 

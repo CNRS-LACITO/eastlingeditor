@@ -264,6 +264,7 @@ class App extends Component {
               <Route path="/register" component={Register} />
               <Route path="/profile" component={Profile} />
               <Route path="/documents/:docId" component={Document} />
+              <Route path="/document_oai/:oaiPrimary/:oaiSecondary/" component={Document} />
               <Route path="/documents" component={Documents} />
             </Switch>
           
