@@ -6,7 +6,7 @@ const API_URL = globalParameters.API_URL;
 
 class DocumentService {
 
-	import(xmlFile, docId) {
+	importAnnotations(xmlFile, docId) {
 	    let formData = new FormData();
 	    formData.append("file", xmlFile);
 	    formData.append("docId", docId);
@@ -23,22 +23,29 @@ class DocumentService {
 
 	get(docId) {
 	    return axios.get(API_URL + 'documents/' + docId, { headers: authHeader() })
-	      .then(response => response.data);
+	      .then(response => response);
 	  }
 
 	getByOAI(oaiPrimary,oaiSecondary) {
 	    return axios.get(API_URL + 'documents/oai/'+ oaiPrimary + "/" + oaiSecondary, { headers: authHeader() })
-	      .then(response => response.data);
+	      .then(response => response);
 	  }
 
 //???????????????TODO : reporter dans une seule requête vers l'API et tout traiter en PHP ? oui car pas d'interactions avec le user !!!
 
 /////////////////////////////////////////////////
 
-  	create(lang, type) {
+  	create(lang, type, oaiPrimary = null, oaiSecondary = null, recordingDate = null, recordingPlace = null, availableKindOf = null, availableLang = null) {
   		let formData = new FormData();
 	    formData.append("lang", lang);
 	    formData.append("type", type);
+
+	    formData.append("oai_primary", oaiPrimary);
+	    formData.append("oai_secondary", oaiSecondary);
+	    formData.append("recording_place", recordingPlace);
+	    formData.append("recording_date", recordingDate);
+	    formData.append("available_kindOf", availableKindOf);
+	    formData.append("available_lang", availableLang);
 
 	    authHeader['Content-Type'] = 'application/x-www-form-urlencoded';
 

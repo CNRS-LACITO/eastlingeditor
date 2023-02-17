@@ -13,6 +13,8 @@ import AddIcon from '@material-ui/icons/AddCircle';
 import EditIcon from '@material-ui/icons/Edit';
 import SendIcon from '@material-ui/icons/Send';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import GetApp from '@material-ui/icons/GetApp';
+
 
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -76,6 +78,7 @@ class Documents extends Component {
   };
 
   handleLangChange = (event) => {
+    console.log(event.target.innerHTML);
     this.setState({
         langCorpus: event.target.innerHTML
       });
@@ -301,7 +304,7 @@ class Documents extends Component {
                 <EditIcon />
             </IconButton>
             <IconButton disabled color="primary" title="Download document" aria-label="Download document">
-              <CloudDownloadIcon />
+              <GetApp />
             </IconButton>
             <IconButton disabled color="primary" title="Send document for deposit" aria-label="Send document for deposit">
               <SendIcon />
@@ -379,6 +382,15 @@ class Documents extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
+
+              <IconButton 
+                color="primary" 
+                title="Import a document from Pangloss" 
+                aria-label="Import a document from Pangloss" 
+                onClick={()=>this.props.history.push("/import?oai_primary=&oai_secondary=")}
+                >
+                  <CloudDownloadIcon />
+              </IconButton>
 
               <Dialog open={this.state.openDeleteDialog} onClose={this.handleCloseDeleteDialog} aria-labelledby="form-createdialog-title">
                 <DialogTitle id="form-deletedialog-title">Delete a document</DialogTitle>

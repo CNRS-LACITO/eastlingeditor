@@ -18,7 +18,7 @@ class TitleCreateForm extends Component {
     super(props);
     this.state = {
       loading:false,
-      lang:(props.available_lang!==null && props.available_lang.length > 0) ? props.available_lang[0]:"",
+      lang:(props.available_lang!==undefined && props.available_lang!==null && props.available_lang.length > 0) ? props.available_lang[0]:"",
       title:""
     };
 

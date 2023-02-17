@@ -152,7 +152,7 @@ export default class ImageMultiSelector extends React.Component {
       <div id={"ImageSelector_"+this.props.image.id} className="ImageSelector">
 
         <MultiCrops
-          src={"data:image/png;base64,"+this.props.image["TO_BASE64(content)"]}
+          src={this.props.image["url"] || "data:image/png;base64,"+this.props.image["TO_BASE64(content)"]}
           //src={"data:image/png;base64,"+window.imagesMap["image"+this.props.image.id]}
           width={this.state.imageSelectorWidth}
           coordinates={this.state.coordinates}

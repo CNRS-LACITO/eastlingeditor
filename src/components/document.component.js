@@ -81,7 +81,7 @@ class Document extends Component {
 
   refreshDocument = () => {
     //URL requested stored if not logged in for redirection after login
-    window.intendedUrl = this.props.match.url;
+    window.intendedUrl = this.props.match.url.replace(window.location.origin+"/editor","");
 
     var tabId = parseInt(this.getUrlParameter("tab"));
     var expanded = this.getUrlParameter("expanded");
@@ -96,7 +96,7 @@ class Document extends Component {
       //cas du document créé dans Eastling
       (this.props.match.params.docId) && DocumentService.get(this.props.match.params.docId).then(
         response => {
-          if(typeof response === 'object'){
+          if(typeof response.data === 'object'){
 
             var typeOf = {};
             typeOf.text = {}; typeOf.text.transcriptions = []; typeOf.text.translations = [];
@@ -105,28 +105,29 @@ class Document extends Component {
             typeOf.morpheme = {}; typeOf.morpheme.transcriptions = []; typeOf.morpheme.translations = [];
             typeOf.note = {}; typeOf.note.translations = [];
 
-            this.parseTypeOf(response.annotations[0],typeOf);
+            this.parseTypeOf(response.data.annotations[0],typeOf);
 
-            response.typeOf = typeOf;
+            response.data.typeOf = typeOf;
 
-            response.images.forEach(function(image,index){
+            response.data.images.forEach(function(image,index){
                 //window.imagesMap["image"+image.id] = image["TO_BASE64(content)"];
                 window.imagesMap.push({
                   id:image.id,
                   content:image["TO_BASE64(content)"],
-                  filename:image.rank+'_'+image.filename
+                  filename:image.rank+'_'+image.filename,
+                  url:image.url
                 });
 
             });
 
             this.setState({
-              currentDocument:response,
+              currentDocument:response.data,
               typeOf:typeOf,
               loading:false,
               value:tabId,
               expanded:(expanded==='true'),
               //activeAnnotationId:activeAnnotationId,
-              title:response.titles[0]!==undefined?response.titles[0].title:""
+              title:response.data.titles[0]!==undefined?response.data.titles[0].title:""
             });
 
           }
@@ -144,60 +145,6 @@ class Document extends Component {
         }
       );
 
-      //cas du document ouvert depuis Pangloss/CoCoon
-      (this.props.match.params.oaiPrimary && this.props.match.params.oaiSecondary) && DocumentService.getByOAI(this.props.match.params.oaiPrimary,this.props.match.params.oaiSecondary).then(
-        response => {
-          if(typeof response === 'object'){
-
-            var typeOf = {};
-            typeOf.text = {}; typeOf.text.transcriptions = []; typeOf.text.translations = [];
-            typeOf.sentence = {}; typeOf.sentence.transcriptions = []; typeOf.sentence.translations = [];
-            typeOf.word = {}; typeOf.word.transcriptions = []; typeOf.word.translations = [];
-            typeOf.morpheme = {}; typeOf.morpheme.transcriptions = []; typeOf.morpheme.translations = [];
-            typeOf.note = {}; typeOf.note.translations = [];
-
-            this.parseTypeOf(response.annotations[0],typeOf);
-
-            response.typeOf = typeOf;
-
-            response.images.forEach(function(image,index){
-                //window.imagesMap["image"+image.id] = image["TO_BASE64(content)"];
-                window.imagesMap.push({
-                  id:image.id,
-                  content:image["TO_BASE64(content)"],
-                  filename:image.rank+'_'+image.filename
-                });
-
-            });
-
-            this.setState({
-              currentDocument:response,
-              typeOf:typeOf,
-              loading:false,
-              value:tabId,
-              expanded:(expanded==='true'),
-              //activeAnnotationId:activeAnnotationId,
-              title:response.titles[0]!==undefined?response.titles[0].title:""
-            });
-
-          }
-
-        },
-        error => {
-          if(error.response.status===401){
-            this.props.history.push('/login');
-          }else{
-            this.setState({
-              currentDocument:
-                (error.response && error.response.data) ||
-                error.message ||
-                error.toString(),
-                loading:false
-            });
-          }
-
-        }
-      );
   }
 
   refreshDocumentAnnotations = () => {

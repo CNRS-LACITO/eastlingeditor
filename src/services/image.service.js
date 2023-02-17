@@ -7,7 +7,7 @@ const API_URL = globalParameters.API_URL;
 class ImageService {
 
 
-  	create(resourceFile, rank, filename, name, document_id) {
+  	create(resourceFile, rank, filename, name, document_id, url = null) {
 
 		let formData = new FormData();
 	    formData.append("resourceFile", resourceFile);
@@ -15,7 +15,7 @@ class ImageService {
 	    formData.append("filename", filename);
 	    formData.append("name", name);
 	    formData.append("document_id", document_id);
-
+	    formData.append("url", url);
 
 	    authHeader['Content-Type'] = 'multipart/form-data';
 

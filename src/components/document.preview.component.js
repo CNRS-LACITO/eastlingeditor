@@ -42,7 +42,8 @@ export default class DocumentPreview extends Component {
       },
     };
 
-    var isWordList = (annotationsEditor.children_annotations && annotationsEditor.children_annotations[0].type === "W");
+    //var isWordList = (annotationsEditor.children_annotations && annotationsEditor.children_annotations[0].type === "W");
+    var isWordList = (annotationsEditor.type === "W");
 
     annotationsPlayer.WORDLIST = {};
 
@@ -408,7 +409,8 @@ export default class DocumentPreview extends Component {
           isAnnotationsLoaded: true,
           annotations : this.convertToPlayerFormat(this.props.annotations[0]).annotations,
           //doi : result.doi,
-          isWordList : (this.props.annotations[0].children_annotations[0].type === "W"),
+          //isWordList : (this.props.annotations[0].children_annotations[0].type === "W"),
+          isWordList : (this.props.annotations[0].type === "W"),
           urlFile : '',
           extensionFile : '',
           MEDIAFILE : {"type":"audio","url":'',"content":this.props.recording?this.props.recording['TO_BASE64(content)']:null},

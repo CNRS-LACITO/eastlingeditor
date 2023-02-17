@@ -7,7 +7,7 @@ const API_URL = globalParameters.API_URL;
 class RecordingService {
 
 
-  	create(resourceFile, type, name, document_id) {
+  	create(resourceFile, type, name, document_id,url = null) {
 
 		let formData = new FormData();
 	    formData.append("resourceFile", resourceFile);
@@ -15,6 +15,8 @@ class RecordingService {
 	    formData.append("filename", name);
 	    formData.append("name", name);
 	    formData.append("document_id", document_id);
+	    formData.append("url", url);
+
 /*
 	    let formDataCloudConvert = new FormData();
 	    formDataCloudConvert.append("file", resourceFile);

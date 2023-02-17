@@ -7,6 +7,11 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from 'react-translated';
 import translation from './translation';
 
+
+if(!window.location.pathname.includes("/login")){
+  window.intendedUrl = window.location.pathname.replace("/editor","") + window.location.search;
+}
+
 ReactDOM.render(
   <BrowserRouter basename="/editor">
     <Provider language="en" translation={translation}>
@@ -15,7 +20,6 @@ ReactDOM.render(
   </BrowserRouter>,
   document.getElementById("root")
 );
-
 
 
 // If you want to start measuring performance in your app, pass a function

@@ -348,7 +348,7 @@ export default class TextItem extends React.Component {
                       }}
                       onChange={this.onLangChange}
                     >
-                      {this.props.available_lang.map((a) => (
+                      {this.props.available_lang && this.props.available_lang.map((a) => (
                         <option value={a}>
                           {a}
                         </option>

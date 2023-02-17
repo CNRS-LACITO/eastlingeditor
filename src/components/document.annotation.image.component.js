@@ -79,9 +79,10 @@ export default class Image extends Component {
       var height = (splitCoords[3] - splitCoords[1]);
 
       //const img = new Image(); //BUG conflit nom de classe courante avec javascript
+      /*
       var img = document.createElement('img');
       img.src = "data:image/png;base64,"+window.imagesMap.filter((image)=>image.id === i.image_id)[0].content;
-
+*/
       var cssBGPosition = '-' + splitCoords[0] + 'px -' + splitCoords[1] + 'px';  
 
       const imgStyle = {
@@ -97,7 +98,7 @@ export default class Image extends Component {
         'transform-origin': 'left top',
       };
 
-      imageElements.push(
+      (window.imagesMap.filter((image)=>image.id === i.image_id).length > 0) && imageElements.push(
           //<div style={{position:'relative',textAlign:'initial'}}>
           //<div style={{overflow:"hidden",width:width,height:height}}>
           <div>

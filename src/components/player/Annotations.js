@@ -103,7 +103,8 @@ class Annotations extends React.Component {
              // }
           });
           //console.log(a.AREA[0].image.split('image'));
-          imageSrc = "data:image/png;base64,"+window.imagesMap.filter((i)=>i.id === parseInt(a.AREA[0].image.split('image')[1]))[0].content;
+          if(window.imagesMap.filter((i)=>i.id === parseInt(a.AREA[0].image.split('image')[1])).length > 0)
+            imageSrc = "data:image/png;base64,"+window.imagesMap.filter((i)=>i.id === parseInt(a.AREA[0].image.split('image')[1]))[0].content;
         }
         
         sID++;

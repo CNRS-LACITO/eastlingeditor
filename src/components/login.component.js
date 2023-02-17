@@ -23,7 +23,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="https://eastling.huma-num.fr">
+      <Link color="inherit" href="https://eastling.fr">
         Matthew DEO / LACITO (C.N.R.S)
       </Link>{' '}
       {new Date().getFullYear()}
@@ -103,11 +103,13 @@ class Login extends Component {
       AuthService.login(this.state.username, this.state.password).then(
         () => {
           if(window.intendedUrl){
-            this.props.history.push(window.intendedUrl)
+            this.props.history.push(window.intendedUrl);
+            //window.location.href=window.intendedUrl;
+
           }else{
             this.props.history.push("/documents");
           }
-          window.intendedUrl = "";
+          window.intendedUrl = null;
           window.location.reload();
 
         },

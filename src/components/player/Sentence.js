@@ -202,10 +202,10 @@ class Sentence extends React.Component {
 			        	coords[2] *= ratio;
 			        	coords[3] *= ratio;
 
-				        coords[0] -= delta_x[w.AREA.image];
-				        coords[1] -= delta_y[w.AREA.image];
-								coords[2] -= delta_x[w.AREA.image];
-				        coords[3] -= delta_y[w.AREA.image];
+				        coords[0] -= (delta_x[w.AREA.image] || 0);
+				        coords[1] -= (delta_y[w.AREA.image] || 0);
+								coords[2] -= (delta_x[w.AREA.image] || 0);
+				        coords[3] -= (delta_y[w.AREA.image] || 0);
 
 				        //var newCoords = coords.join(',');
 				        var canvasStyle = {
@@ -275,10 +275,11 @@ class Sentence extends React.Component {
 			        	coords[2] *= ratio;
 			        	coords[3] *= ratio;
 
-				        coords[0] -= delta_x[w.AREA.image][imageAreaIndex];
-				        coords[1] -= delta_y[w.AREA.image][imageAreaIndex];
-								coords[2] -= delta_x[w.AREA.image][imageAreaIndex];
-				        coords[3] -= delta_y[w.AREA.image][imageAreaIndex];
+
+				        coords[0] -= ((delta_x[w.AREA.image] && delta_x[w.AREA.image][imageAreaIndex]) || 0);
+				        coords[1] -= ((delta_x[w.AREA.image] && delta_y[w.AREA.image][imageAreaIndex]) || 0);
+								coords[2] -= ((delta_x[w.AREA.image] && delta_x[w.AREA.image][imageAreaIndex]) || 0);
+				        coords[3] -= ((delta_x[w.AREA.image] && delta_y[w.AREA.image][imageAreaIndex]) || 0);
 
 				        //var newCoords = coords.join(',');
 				        var canvasStyle = {
@@ -328,7 +329,7 @@ class Sentence extends React.Component {
 
 	 var pictures = [];
 
-	 this.props.s.AREA.forEach((imageArea,imageAreaIndex)=>{
+	 this.props.s.AREA && this.props.s.AREA.forEach((imageArea,imageAreaIndex)=>{
 	 	pictures.push(<Picture 
 	      			sentenceId={this.props.s.id} 
 	      			imageSrc={this.props.imageSrc} 

@@ -111,6 +111,7 @@ class DocumentAnnotations extends React.Component {
     };
     this.previewCanvasRef = React.createRef();
 
+
   }
 
   componentWillUnmount(){

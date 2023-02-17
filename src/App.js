@@ -11,6 +11,7 @@ import Home from "./components/home.component";
 import Profile from "./components/profile.component";
 import Documents from "./components/documents.component";
 import Document from "./components/document.component";
+import DocumentImport from "./components/document.import.component";
 
 import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
@@ -94,9 +95,12 @@ class App extends Component {
         //showAdminBoard: user.roles.includes("ROLE_ADMIN"),
       });
     }
+
   }
 
   logOut() {
+    window.intendedUrl = null;
+
     AuthService.logout();
     this.props.history.push('/login',null);
     window.location.reload();
@@ -264,7 +268,7 @@ class App extends Component {
               <Route path="/register" component={Register} />
               <Route path="/profile" component={Profile} />
               <Route path="/documents/:docId" component={Document} />
-              <Route path="/document_oai/:oaiPrimary/:oaiSecondary/" component={Document} />
+              <Route path="/import" component={DocumentImport} />
               <Route path="/documents" component={Documents} />
             </Switch>
           

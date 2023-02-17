@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Container from '@material-ui/core/Container';
 import DocumentService from "../services/document.service";
 import Chip from '@material-ui/core/Chip';
-import ImportIcon from '@material-ui/icons/CloudDownload';
+import ImportIcon from '@material-ui/icons/GetApp';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
