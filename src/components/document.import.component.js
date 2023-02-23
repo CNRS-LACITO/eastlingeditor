@@ -66,21 +66,21 @@ class DocumentImport extends Component {
     });
 
     CocoonService.getOai(oaiPrimary,"primary").then(
-          response => {
-            if(response.data.subject === null){
+          responseGetOaiPrimary => {
+            if(responseGetOaiPrimary.data.subject === null){
               //OAI not valid
               this.setState({
                 userFeedback:{status:"error",message:"The primary OAI doesn't exist. End of the importing process."},
                 loading:false,
-                oaiPrimaryData:response.data
+                oaiPrimaryData:responseGetOaiPrimary.data
               });
 
             }else{
               //OAI valid, get the Secondary 
-              oaiPrimaryData = response.data;
+              oaiPrimaryData = responseGetOaiPrimary.data;
               CocoonService.getOai(oaiSecondary,"secondary").then(
-                  response => {
-                    if(response.data === null){
+                  responseGetOaiSecondary => {
+                    if(responseGetOaiSecondary.data === null){
                       //OAI not valid
                       this.setState({
                         userFeedback:{status:"error",message:"The secondary OAI doesn't exist. End of the importing process."},
@@ -90,29 +90,16 @@ class DocumentImport extends Component {
                     }else{
 
                       //OAI valid
-                      oaiSecondaryData = response.data;
+                      oaiSecondaryData = responseGetOaiSecondary.data;
                       DocumentService.create(oaiPrimaryData.subject[0].code + " / " + oaiPrimaryData.subject[0].name,oaiSecondaryData.type,oaiPrimary,oaiSecondary).then(
                         responseDocumentCreate => {
                           importStatus++; // 1
                           
                           createdDocumentData = responseDocumentCreate.data;
 
-                          //Mise à jour des metadonnées
-/*
-                          DocumentService.update(createdDocumentData.id,data).then(
-                            responseDocumentUpdate => {
-
-                            },
-                            error => {
-
-                            });
-*/
-
-                          //0. ajout des titres
-
+                          //0.1 Titres
                             for (const [key, value] of Object.entries(oaiPrimaryData.title)) {
                               console.log(`${key}: ${value}`,createdDocumentData);
-
                               var dataTitle = {
                                 lang:`${key}`,
                                 title:`${value}`,
@@ -123,37 +110,58 @@ class DocumentImport extends Component {
                               (responseTitleCreate) => {
                                   
                                 },
-                                error => {
+                                errorTitleCreate => {
 
                                 });
+                            }
+                          //
+                          //0.2 Contributors
+                          console.log(oaiPrimaryData.contributors);
+
+                            for (const [key, value] of Object.entries(oaiPrimaryData.contributors)) {
+                              console.log(`${key}: ${value}`);
+
+                              if(value.length > 0) value.forEach((c)=>{
+                                var name = c.name.split(',');
+
+                                var dataContributor = {
+                                  type:`${key}`,
+                                  firstName:name[1] || '',
+                                  lastName:name[0] || '',
+                                  document_id:createdDocumentData.id
+                                };
+
+                                ContributorService.create(dataContributor).then(
+                                (responseContributorCreate) => {
+                                    
+                                  },
+                                  errorContributorCreate => {
+
+                                  });
+
+                              });
+
 
                             }
+                          //
 
                             
-/*
-                            
-                                */
-
                           
-
-
-
-
                           //1. on crée les ressources liées au document
                           //1.1 Enregistrement
                           RecordingService.create(null, (oaiPrimaryData.audio !== null)?"AUDIO":"VIDEO",oaiPrimaryData.audio, responseDocumentCreate.data.id,oaiPrimaryData.audio).then(
-                              (responseRecordingCreate) => {
+                              responseRecordingCreate => {
                                   importStatus++; // 2
                                 },
-                                error => {
-                                  if(error.responseRecordingCreate.status===401) this.props.history.push('/login');
-                                  console.log(error.responseRecordingCreate);
+                                errorRecordingCreate => {
+                                  if(errorRecordingCreate.responseRecordingCreate.status===401) this.props.history.push('/login');
+                                  console.log(errorRecordingCreate.responseRecordingCreate);
                                   const resMessage =
-                                    (error.responseRecordingCreate &&
-                                      error.responseRecordingCreate.data &&
-                                      error.responseRecordingCreate.data.message) ||
-                                    error.message ||
-                                    error.toString();
+                                    (errorRecordingCreate.responseRecordingCreate &&
+                                      errorRecordingCreate.responseRecordingCreate.data &&
+                                      errorRecordingCreate.responseRecordingCreate.data.message) ||
+                                    errorRecordingCreate.message ||
+                                    errorRecordingCreate.toString();
 
                                   this.setState({
                                     loading: false,
@@ -161,6 +169,7 @@ class DocumentImport extends Component {
                                     openAddDialog:false
                                   });
                             });
+                          //
                             
 
                             //1.2 Images
@@ -168,25 +177,25 @@ class DocumentImport extends Component {
                               for(var imageRank = 0; imageRank < oaiPrimaryData.images.length; imageRank++){
                                 console.log(imageRank);
                                 ImageService.create(null, imageRank+1, oaiPrimaryData.images[imageRank].id,oaiPrimaryData.images[imageRank].id, responseDocumentCreate.data.id,oaiPrimaryData.images[imageRank].url).then(
-                                  (responseImageCreate) => {
+                                  responseImageCreate => {
                                       importStatus++;
                                     },
-                                    error => {
-                                      if(error.response.status===401) this.props.history.push('/login');
+                                  errorImageCreate => {
+                                      if(errorImageCreate.response.status===401) this.props.history.push('/login');
                                       const resMessage =
-                                        (error.response &&
-                                          error.response.data &&
-                                          error.response.data.message) ||
-                                        error.message ||
-                                        error.toString();
+                                        (errorImageCreate.response &&
+                                          errorImageCreate.response.data &&
+                                          errorImageCreate.response.data.message) ||
+                                        errorImageCreate.message ||
+                                        errorImageCreate.toString();
 
                                       this.setState({
                                         loading: false,
                                         errorMessage: resMessage,
                                         openAddDialog:false
-                                    });
-                                });
-                              }
+                                      });
+                                  });
+                                }
                             }
                             
                           //2. on crée l'annotation racine (niveau TEXTE) et on importe les annotations depuis le fichier XML
@@ -198,38 +207,38 @@ class DocumentImport extends Component {
 
                           AnnotationService.create(data).then(
 
-                            (responseCreateAnnotation) => {
+                            responseCreateAnnotation => {
                               
                               DocumentService.importAnnotations(oaiSecondaryData.urlFile,responseDocumentCreate.data.id).then(
                                 
-                                responseDocumentImport => {
+                                responseAnnotationsImport => {
                                   importStatus++; // 3
-                                  console.log(responseDocumentImport);
+                                  //console.log(responseAnnotationsImport);
                                 },
-                                error => {
+                                errorAnnotationsImport => {
                                   const resMessage =
-                                    (error.response &&
-                                      error.response.data &&
-                                      error.response.data.message) ||
-                                    error.message ||
-                                    error.toString();
+                                    (errorAnnotationsImport.response &&
+                                      errorAnnotationsImport.response.data &&
+                                      errorAnnotationsImport.response.data.message) ||
+                                    errorAnnotationsImport.message ||
+                                    errorAnnotationsImport.toString();
                                     
                                   this.setState({
                                     loading: false,
                                     userFeedback:{status:"error",message:resMessage}
                                   });
 
-                                  if(error.response.status===401) this.props.history.push('/login');
+                                  if(errorAnnotationsImport.response.status===401) this.props.history.push('/login');
 
                                 });
                             },
-                            error => {
+                            errorCreateAnnotation => {
                               const resMessage =
-                                (error.response &&
-                                  error.response.data &&
-                                  error.response.data.message) ||
-                                error.message ||
-                                error.toString();
+                                (errorCreateAnnotation.response &&
+                                  errorCreateAnnotation.response.data &&
+                                  errorCreateAnnotation.response.data.message) ||
+                                errorCreateAnnotation.message ||
+                                errorCreateAnnotation.toString();
 
                               this.setState({
                                 loading: false,
@@ -238,8 +247,66 @@ class DocumentImport extends Component {
 
                             }
                           );
+
+                          //Mise à jour des metadonnées
+                          //0.0 ajout des metadata
+
+                          //0.3 Langues et KindOf
+                          var available_kindOf = [];
+                          oaiSecondaryData.typeOf.text.transcriptions.forEach((item)=>{
+                            available_kindOf.push(item);
+                          });
+                          oaiSecondaryData.typeOf.sentence.transcriptions.forEach((item)=>{
+                            available_kindOf.push(item);
+                          });
+                          oaiSecondaryData.typeOf.word.transcriptions.forEach((item)=>{
+                            available_kindOf.push(item);
+                          });
+                          oaiSecondaryData.typeOf.morpheme.transcriptions.forEach((item)=>{
+                            available_kindOf.push(item);
+                          });
+
+                          var available_lang = [];
+                          oaiSecondaryData.typeOf.text.translations.forEach((item)=>{
+                            available_lang.push(item);
+                          });
+                          oaiSecondaryData.typeOf.sentence.translations.forEach((item)=>{
+                            available_lang.push(item);
+                          });
+                          oaiSecondaryData.typeOf.word.translations.forEach((item)=>{
+                            available_lang.push(item);
+                          });
+                          oaiSecondaryData.typeOf.morpheme.translations.forEach((item)=>{
+                            available_lang.push(item);
+                          });
+
+                          const unique_available_kindOf = available_kindOf.filter(function(ele , pos){
+                              return available_kindOf.indexOf(ele) == pos;
+                          });
+
+                          const unique_available_lang = available_lang.filter(function(ele , pos){
+                              return available_lang.indexOf(ele) == pos;
+                          });
+
+                          console.log(unique_available_kindOf,unique_available_lang);
+
+                          var updateDocumentData = {
+                            recording_date:oaiPrimaryData.recording_date,
+                            //recording_place:oaiPrimaryData.recording_place,
+                            available_lang:unique_available_lang,
+                            available_kindOf:unique_available_kindOf
+                          };
+
+                          DocumentService.update(createdDocumentData.id,updateDocumentData).then(
+                            (responseDocumentUpdate) => {
+                            
+                            },
+                            errorDocumentUpdate => {
+
+                          });
+
                         },
-                        error => {
+                        errorDocumentCreate => {
 
                         }
                       );
@@ -247,10 +314,8 @@ class DocumentImport extends Component {
                       this.setState({
                         userFeedback:{status:"success",message:"Import succeded. Creating document ..."},
                         loading:false,
-                        oaiSecondaryData:response.data
+                        oaiSecondaryData:responseGetOaiSecondary.data
                       });
-
-                      console.log(oaiPrimaryData,oaiSecondaryData);
 
                       this.props.history.push('/documents/'+createdDocumentData.id+'?tab=0');
                     }
@@ -274,15 +339,15 @@ class DocumentImport extends Component {
             }
 
           },
-          error => {
-            if(error.response.status===401){
+          errorGetOai => {
+            if(errorGetOai.response && errorGetOai.response.status===401){
               this.props.history.push('/login');
             }else{
               this.setState({
                 currentDocument:
-                  (error.response && error.response.data) ||
-                  error.message ||
-                  error.toString(),
+                  (errorGetOai.response && errorGetOai.response.data) ||
+                  errorGetOai.message ||
+                  errorGetOai.toString(),
                   loading:false
               });
             }

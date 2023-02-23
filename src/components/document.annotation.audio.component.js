@@ -160,7 +160,7 @@ class Audio extends Component {
 
           <Chip label="audio" size="small" />
 
-          {this.state.start > 0 && <IconButton color="primary" aria-label="Play" onClick={this.handlePlay}>
+          {this.state.start >= 0 && <IconButton color="primary" aria-label="Play" onClick={this.handlePlay}>
             {!this.state.playing ? <PlayIcon /> : <PauseIcon /> }
           </IconButton>
           }
