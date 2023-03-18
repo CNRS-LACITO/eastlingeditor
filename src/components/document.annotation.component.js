@@ -255,12 +255,12 @@ export default class DocumentAnnotation extends React.Component {
 
               <Container>
 
-                <Chip
-                  size="small"
-                  color="primary"
-                  label={parentLabel}
-                  onClick={()=>this.props.showAnnotation(this.state.data.document_id,this.state.data.parent_id)}
-                />
+                {(parentLabel!=="") && <Chip
+                                  size="small"
+                                  color="primary"
+                                  label={parentLabel}
+                                  onClick={()=>this.props.showAnnotation(this.state.data.document_id,this.state.data.parent_id)}
+                                />}
 
 
               </Container>
@@ -274,7 +274,7 @@ export default class DocumentAnnotation extends React.Component {
                 </Rank>
               </Container>
 
-              {(1===1) && <Container style={{display:"inline-flex"}}>
+              {(parentLabel!=="") && <Container style={{display:"inline-flex"}}>
                   <IconButton title="Previous" aria-label="Previous" onClick={() => this.navigatePrevNext(-1)}>
                     <BeforeIcon />
                   </IconButton>
@@ -317,6 +317,18 @@ export default class DocumentAnnotation extends React.Component {
               <Container item xs={6}>
                 <Container item  xs={12}>
                   
+                  
+                  
+                  {/*this.state.forms && this.state.forms.length > 0 && this.state.forms.map((form) => (*/}
+                  {this.state.data.forms && this.state.data.forms.length > 0 && this.state.data.forms.map((form) => (
+                    <Form
+                      data={form}
+                      refresh={this.refresh}
+                      available_lang={this.props.available_kindOf}
+                      note_available_lang={this.props.available_lang}
+                    />
+                  ))}
+
                   <Chip
                     icon={this.state.openNewForm ? <RemoveIcon /> : <AddIcon /> }
                     label="form"
@@ -332,16 +344,6 @@ export default class DocumentAnnotation extends React.Component {
                   hidden={!this.state.openNewForm}
                   available_lang={this.props.available_kindOf}
                   />
-                  
-                  {/*this.state.forms && this.state.forms.length > 0 && this.state.forms.map((form) => (*/}
-                  {this.state.data.forms && this.state.data.forms.length > 0 && this.state.data.forms.map((form) => (
-                    <Form
-                      data={form}
-                      refresh={this.refresh}
-                      available_lang={this.props.available_kindOf}
-                      note_available_lang={this.props.available_lang}
-                    />
-                  ))}
 
                 </Container>
 
@@ -349,6 +351,16 @@ export default class DocumentAnnotation extends React.Component {
                   <Typography variant="h5" gutterBottom>
                   </Typography>
                   
+                  
+                  {this.state.data.translations && this.state.data.translations.length >0 && this.state.data.translations.map((translation) => (
+                    <Translation
+                      data={translation}
+                      refresh={this.refresh}
+                      available_lang={this.props.available_lang}
+                      note_available_lang={this.props.available_lang}
+                    />
+                  ))}
+
                   <Chip
                     icon={this.state.openNewTranslation ? <RemoveIcon /> : <AddIcon /> }
                     label="translation"
@@ -364,19 +376,21 @@ export default class DocumentAnnotation extends React.Component {
                   hidden={!this.state.openNewTranslation} 
                   available_lang={this.props.available_lang}
                   />
-                  {this.state.data.translations && this.state.data.translations.length >0 && this.state.data.translations.map((translation) => (
-                    <Translation
-                      data={translation}
-                      refresh={this.refresh}
-                      available_lang={this.props.available_lang}
-                      note_available_lang={this.props.available_lang}
-                    />
-                  ))}
 
                 </Container>
 
                 <Container item xs={12}>
-                  <Chip
+                  
+                  {this.state.data.notes && this.state.data.notes.length > 0 && this.state.data.notes.map((note) => (
+                      <Note
+                        data={note}
+                        refreshNotesParent={() => this.refresh('note')}
+                        available_lang={this.props.available_lang}
+                        parent_type={this.props.type}
+                      />
+                    ))}
+
+                    <Chip
                       icon={this.state.openNewNote ? <RemoveIcon /> : <AddIcon /> }
                       label="note"
                       clickable
@@ -392,14 +406,7 @@ export default class DocumentAnnotation extends React.Component {
                     hidden={!this.state.openNewNote}
                     available_lang={this.props.available_lang}
                     />
-                  {this.state.data.notes && this.state.data.notes.length > 0 && this.state.data.notes.map((note) => (
-                      <Note
-                        data={note}
-                        refreshNotesParent={() => this.refresh('note')}
-                        available_lang={this.props.available_lang}
-                        parent_type={this.props.type}
-                      />
-                    ))}
+                    
                 </Container>
 
               {(this.state.data.type !== 'M' && this.state.data.children_annotations && this.state.data.children_annotations.length===0) && <Container item xs={12}>

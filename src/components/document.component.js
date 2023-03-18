@@ -9,6 +9,7 @@ import DocumentAnnotations from "./document.annotations.component";
 import DocumentPreview from "./document.preview.component";
 import DocumentExport from "./document.export.component";
 import { withRouter } from 'react-router-dom';
+import { Translate } from 'react-translated';
 
 var displayOptions = {};
 
@@ -256,10 +257,10 @@ class Document extends Component {
 
         <Breadcrumbs aria-label="breadcrumb" style={{fontSize:"0.875rem",margin:"20px"}}>
           <Link color="primary" href="/editor" onClick={handleClick}>
-            Accueil
+            <Translate text='Home'/>
           </Link>
           <Link color="primary" href="/editor/documents/" onClick={handleClick}>
-            Mes documents
+            <Translate text='My documents'/>
           </Link>
           <a color="default">{this.state.title}</a>
         </Breadcrumbs>
@@ -275,9 +276,9 @@ class Document extends Component {
               aria-label="tabs"
             >
               <Tab label="Description" {...a11yProps(0)} />
-              <Tab label="Resources" {...a11yProps(1)} />
+              <Tab label=<Translate text='Resources'/> {...a11yProps(1)} />
               <Tab label="Annotations" {...a11yProps(2)} />
-              <Tab label="Preview" {...a11yProps(3)} />
+              <Tab label=<Translate text='Preview'/> {...a11yProps(3)} />
               <Tab label="Export" {...a11yProps(4)} />
             </Tabs>
           </AppBar>}

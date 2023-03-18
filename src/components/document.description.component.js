@@ -20,6 +20,8 @@ import TitleService from "../services/title.service";
 import HelperService from "../services/helper.service";
 import { withRouter } from 'react-router-dom';
 
+import { Translate } from 'react-translated';
+
 class DocumentDescription extends Component {
   constructor(props) {
     super(props);
@@ -156,6 +158,8 @@ class DocumentDescription extends Component {
     });
 
     this.props.refreshDocumentMetadata(e.target.id,e.target.value);
+
+    console.log(this.props.document);
 
     DocumentService.update(this.props.document.id,{[e.target.id]:e.target.value}).then(
       (response) => {
@@ -307,7 +311,7 @@ class DocumentDescription extends Component {
 
           </div>
           <div>
-            <Typography component="h3">Recording</Typography>
+            <Typography component="h3"><Translate text='Recording' /></Typography>
             <TextField 
                 id="recording_date" 
                 label="Date" 
@@ -320,8 +324,8 @@ class DocumentDescription extends Component {
             
             <TextField 
                 id="recording_place" 
-                label="Place" 
-                placeholder="Place of recording"
+                label=<Translate text='Place' /> 
+                placeholder={<Translate text='Place of recording' />}
                 type="text"
                 value={this.state.recording_place}
                 onChange={this.onChange}
@@ -330,7 +334,7 @@ class DocumentDescription extends Component {
           </div>
 
           <div id="available_kindOf">
-              <Typography component="h3">Available kind of transcription</Typography>
+              <Typography component="h3"><Translate text='Available kind of transcription' /></Typography>
               {available_kindOf} 
               <Chip
                 icon={this.state.openNewAvailableKindOf ? <RemoveIcon /> : <AddIcon /> }
@@ -351,7 +355,7 @@ class DocumentDescription extends Component {
           </div>
 
           <div id="available_lang">
-              <Typography component="h3">Available translation languages</Typography>
+              <Typography component="h3"><Translate text='Available translation languages' /></Typography>
               {available_lang} 
               <Chip
                 icon={this.state.openNewAvailableLanguage ? <RemoveIcon /> : <AddIcon /> }
@@ -372,7 +376,7 @@ class DocumentDescription extends Component {
           </div>
 
           <div id="titles">
-              <Typography component="h3">Titles</Typography>
+              <Typography component="h3"><Translate text='Titles' /></Typography>
               {titles} 
 
               <Chip
@@ -392,7 +396,7 @@ class DocumentDescription extends Component {
           </div>
 
           <div id="contributors">
-              <Typography component="h3">Contributors</Typography>
+              <Typography component="h3"><Translate text='Contributors' /></Typography>
               {contributors} 
 
               <Chip

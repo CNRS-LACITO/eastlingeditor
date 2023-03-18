@@ -332,34 +332,34 @@ export default class TextItem extends React.Component {
           {this.props.text.substring(0,50)}{this.props.text.length>50?"...":""}
 
           </AccordionSummary>
-          <AccordionDetails>
+          <AccordionDetails style={{display:"block"}}>
+            <div>
+              <Grid container>
+                <Grid item xs={2}>
+                    <FormControl>
+                      <InputLabel htmlFor="select-lang">
+                        {this.props.type === "form"?"Kind of form":"Language"}
+                      </InputLabel>
+                      <Select
+                        native
+                        value={this.state.lang}
+                        inputProps={{
+                          id: 'select-lang',
+                        }}
+                        onChange={this.onLangChange}
+                      >
+                        {this.props.available_lang && this.props.available_lang.map((a) => (
+                          <option value={a}>
+                            {a}
+                          </option>
+                        ))}
 
-            <Grid container>
-              <Grid item  xs={2}>
-                  <FormControl>
-                    <InputLabel htmlFor="select-lang">
-                      {this.props.type === "form"?"Kind of form":"Language"}
-                    </InputLabel>
-                    <Select
-                      native
-                      value={this.state.lang}
-                      inputProps={{
-                        id: 'select-lang',
-                      }}
-                      onChange={this.onLangChange}
-                    >
-                      {this.props.available_lang && this.props.available_lang.map((a) => (
-                        <option value={a}>
-                          {a}
-                        </option>
-                      ))}
-
-                    </Select>
-                  </FormControl>
-              </Grid>
+                      </Select>
+                    </FormControl>
+                </Grid>
 
 
-                <Grid item  xs={10}>
+                <Grid item  xs={9}>
                   <TextField
                     id={this.props.type+this.props.id}
                     label={this.props.type === "form"?"Form text":"Text"}
@@ -372,41 +372,47 @@ export default class TextItem extends React.Component {
                     onChange={this.onTextChange}
                     onMouseDown={(e) => {e.stopPropagation()}}
                   />
+
                 </Grid>
+
+                <Grid item  xs={1}>
+                  {
+                    this.state.loading ? <CircularProgress size="1.5rem" />
+                  :
+                  (
+                    !this.state.inputEnabled ?
+                    <div>
+                      <IconButton color="primary" aria-label="Edit" onClick={this.handleEdit}>
+                          <EditIcon />
+                      </IconButton>
+                      <IconButton color="primary" aria-label="Delete" onClick={this.handleDelete}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </div>
+                    :
+                    <div>
+                      <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit}>
+                          <SaveIcon />
+                      </IconButton>
+                      <IconButton color="primary" aria-label="Cancel" onClick={this.handleCancel}>
+                          <CancelIcon />
+                      </IconButton>
+                    </div>
+                    
+                    )
+                  }
+                </Grid>
+
               </Grid>
+            </div>
 
-              {
-                this.state.loading ? <CircularProgress size="1.5rem" />
-              :
-              (
-                !this.state.inputEnabled ?
-                <div>
-                  <IconButton color="primary" aria-label="Edit" onClick={this.handleEdit}>
-                      <EditIcon />
-                  </IconButton>
-                  <IconButton color="primary" aria-label="Delete" onClick={this.handleDelete}>
-                    <DeleteIcon />
-                  </IconButton>
-                </div>
-                :
-                <div>
-                  <IconButton color="primary" aria-label="Save" onClick={this.handleSubmit}>
-                      <SaveIcon />
-                  </IconButton>
-                  <IconButton color="primary" aria-label="Cancel" onClick={this.handleCancel}>
-                      <CancelIcon />
-                  </IconButton>
-                </div>
-                
-                )
-              }
-
+            <div>
               {this.props.type !== 'note' && 
               <Grid container>
                 <Grid item xs={12}>
                 <Chip
                     icon={this.state.openNewNote ? <RemoveIcon /> : <AddIcon /> }
-                    label="note"
+                    label={this.props.type+" note"}
                     clickable
                     size="small"
                     color="primary"
@@ -433,6 +439,11 @@ export default class TextItem extends React.Component {
                 </Grid>
               </Grid>
             }
+            </div>
+
+              
+
+              
            
           </AccordionDetails>
         </Accordion>

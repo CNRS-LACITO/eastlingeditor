@@ -7,7 +7,7 @@ import RecordingService from "../services/recording.service";
 import ImageService from "../services/image.service";
 import TitleService from "../services/title.service";
 import ContributorService from "../services/contributor.service";
-
+import { Translate } from 'react-translated';
 import { withRouter } from 'react-router-dom';
 
 import Container from '@material-ui/core/Container';
@@ -17,6 +17,9 @@ import Chip from '@material-ui/core/Chip';
 import ImportIcon from '@material-ui/icons/CloudDownload';
 import OpenIcon from '@material-ui/icons/CloudDownload';
 import Alert from '@material-ui/lab/Alert';
+
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Link from '@material-ui/core/Link';
 
 class DocumentImport extends Component {
   constructor(props) {
@@ -442,8 +445,23 @@ class DocumentImport extends Component {
   render() {
     if(this.state.currentUser !== null){
 
+      const handleClick = (e) => {
+        console.log(e);
+      }
+
       return (
         <Container>
+
+          <Breadcrumbs aria-label="breadcrumb" style={{fontSize:"0.875rem",margin:"20px"}}>
+            <Link color="primary" href="/editor" onClick={handleClick}>
+              Home
+            </Link>
+            <Link color="primary" href="/editor/documents/" onClick={handleClick}>
+              My documents
+            </Link>
+            <a color="default">Import from Pangloss</a>
+          </Breadcrumbs>
+
           <header className="jumbotron">
             <h3>
              Import Document from Pangloss

@@ -15,6 +15,7 @@ import SendIcon from '@material-ui/icons/Send';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import GetApp from '@material-ui/icons/GetApp';
 
+import { Translate } from 'react-translated';
 
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -32,6 +33,9 @@ import Avatar from '@material-ui/core/Avatar';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { withRouter } from 'react-router-dom';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Link from '@material-ui/core/Link';
+
 
 class Documents extends Component {
   constructor(props) {
@@ -250,6 +254,7 @@ class Documents extends Component {
                 label={item.title} 
                 color="primary"
                 variant="outlined"
+                onClick={()=>this.props.history.push("/documents/" + params.id + "?tab=0")}
                 />
               )
             }
@@ -328,8 +333,21 @@ class Documents extends Component {
         });
       }
 
+      const handleClick = (e) => {
+        console.log(e);
+      }
+
       return (
         <Container>
+
+          <Breadcrumbs aria-label="breadcrumb" style={{fontSize:"0.875rem",margin:"20px"}}>
+          <Link color="primary" href="/editor" onClick={handleClick}>
+            <Translate text='Home'/>
+          </Link>
+          <a color="default"><Translate text='My documents'/></a>
+
+        </Breadcrumbs>
+
           <header className="jumbotron">
             <h3>
              My documents

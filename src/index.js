@@ -12,9 +12,15 @@ if(!window.location.pathname.includes("/login")){
   window.intendedUrl = window.location.pathname.replace("/editor","") + window.location.search;
 }
 
+
+var lang = unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape('lang').replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+
+if(lang.length===0) lang="en";
+
+
 ReactDOM.render(
   <BrowserRouter basename="/editor">
-    <Provider language="en" translation={translation}>
+    <Provider language={lang} translation={translation}>
       <App />
     </Provider>
   </BrowserRouter>,
