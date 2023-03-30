@@ -113,9 +113,30 @@ class ContributorCreateForm extends Component {
             value={this.state.typeOfContributor}
             onChange={this.onContributorTypeChange}
           >
-            <MenuItem value={"speaker"}>Speaker</MenuItem>
-            <MenuItem value={"researcher"}>Researcher</MenuItem>
-            <MenuItem value={"annotator"}>Annotator</MenuItem>
+            <MenuItem value={"annotator"}>annotator</MenuItem>
+            <MenuItem value={"author"}>author</MenuItem>
+            <MenuItem value={"compiler"}>compiler</MenuItem>
+            <MenuItem value={"consultant"}>consultant</MenuItem>
+            <MenuItem value={"data_inputter"}>data_inputter</MenuItem>
+            <MenuItem value={"depositor"}>depositor</MenuItem>
+            <MenuItem value={"developer"}>developer</MenuItem>
+            <MenuItem value={"editor"}>editor</MenuItem>
+            <MenuItem value={"illustrator"}>illustrator</MenuItem>
+            <MenuItem value={"interpreter"}>interpreter</MenuItem>
+            <MenuItem value={"interviewer"}>interviewer</MenuItem>
+            <MenuItem value={"participant"}>participant</MenuItem>
+            <MenuItem value={"performer"}>performer</MenuItem>
+            <MenuItem value={"photographer"}>photographer</MenuItem>
+            <MenuItem value={"recorder"}>recorder</MenuItem>
+            <MenuItem value={"researcher"}>researcher</MenuItem>
+            <MenuItem value={"research_participant"}>research_participant</MenuItem>
+            <MenuItem value={"responder"}>responder</MenuItem>
+            <MenuItem value={"signer"}>signer</MenuItem>
+            <MenuItem value={"singer"}>singer</MenuItem>
+            <MenuItem value={"speaker"}>speaker</MenuItem>
+            <MenuItem value={"sponsor"}>sponsor</MenuItem>
+            <MenuItem value={"transcriber"}>transcriber</MenuItem>
+            <MenuItem value={"translator"}>translator</MenuItem>
           </Select>
         </FormControl>
         <IconButton color="primary" title="Save" aria-label="Save" onClick={this.handleSubmit} hidden={!(this.state.firstname.length >=1 && this.state.lastname.length >=1)}>
