@@ -469,9 +469,16 @@ class DocumentImport extends Component {
                               return available_lang.indexOf(ele) == pos;
                           });
 
+                          var formatedDate = (oaiPrimaryData.recording_date.length>0)?oaiPrimaryData.recording_date:null;
+                          //#45 BF date format
+                          if(formatedDate.length === 4){
+                            formatedDate+='-01-01';
+                          }else if(formatedDate.length === 7){
+                            formatedDate+='-01';
+                          }
 
                           var updateDocumentData = {
-                            recording_date:(oaiPrimaryData.recording_date.length>0)?oaiPrimaryData.recording_date:null,
+                            recording_date:formatedDate,
                             //recording_place:oaiPrimaryData.recording_place,
                             available_lang:unique_available_lang,
                             available_kindOf:unique_available_kindOf
@@ -498,10 +505,25 @@ class DocumentImport extends Component {
 
                             },
                             errorDocumentUpdate => {
-                              this.setState({
-                                userFeedback:[...this.state.userFeedback,{status:"error",message:"Error updating document."}],
-                                loading:false,
-                              });
+                              const resMessage =
+                                (errorDocumentUpdate.response &&
+                                  errorDocumentUpdate.response.data &&
+                                  errorDocumentUpdate.response.data.message) ||
+                                errorDocumentUpdate.message ||
+                                errorDocumentUpdate.toString();
+                                
+                              this.setState(state => ({
+                                userFeedback: state.userFeedback.map(item => {
+                                    if (item.step === 'Description') {
+                                      console.log(item);
+                                        return {
+                                            ...item,
+                                            status:"error",message:resMessage
+                                        }
+                                    }
+                                    return item
+                                }),
+                              }));
                               console.log(errorDocumentUpdate);
                           });
 
