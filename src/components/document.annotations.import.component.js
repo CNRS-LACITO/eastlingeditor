@@ -74,9 +74,11 @@ class DocumentAnnotationsImport extends Component {
     var estimatedDelay = ratio * document.getElementsByName('xmlInputFile')[0].files[0].size / 1000;
     var percentUnit = 100 / estimatedDelay;
 
+    console.log(estimatedDelay);
+
     setInterval(increaseProgress,1000, percentUnit);
 
-    DocumentService.import(document.getElementsByName('xmlInputFile')[0].files[0],this.props.documentId).then(
+    DocumentService.importAnnotations(document.getElementsByName('xmlInputFile')[0].files[0],this.props.documentId).then(
         response => {
           this.setState({
             importedData:response.data,

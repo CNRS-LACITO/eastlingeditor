@@ -64,6 +64,27 @@ class DocumentResources extends Component {
     this.setState({nameInDocument:event.target.value});
   }
 
+  readUploadedFile = (inputFile) => {
+    const temporaryFileReader = new FileReader();
+
+    return new Promise((resolve, reject) => {
+      temporaryFileReader.onerror = () => {
+        temporaryFileReader.abort();
+        reject(new DOMException("Problem parsing input file."));
+      };
+
+      temporaryFileReader.onload = () => {
+        var img = new Image();
+        img.src = temporaryFileReader.result;
+        img.onload = function () {
+          resolve(this.width);
+        }
+      };
+
+      temporaryFileReader.readAsDataURL(inputFile);
+    });
+  }
+
   handleUpload = () => {
     this.setState({
       loading: true
@@ -104,36 +125,57 @@ class DocumentResources extends Component {
             });
       });
 
-      type === 'IMAGE' && ImageService.create(document.getElementById('resourceFile').files[0], this.state.maxImageRank+1, document.getElementById('resourceFile').files[0].name,this.state.nameInDocument || document.getElementById('resourceFile').files[0].name, this.props.documentId).then(
-        (response) => {
 
-            var images = this.state.images;
-            images.push(response.data);
+      if(type === 'IMAGE'){
+                var file  = document.getElementById('resourceFile').files[0];
+                var imageWidth = 1000;
 
-            this.setState({
-              images:images,
-              loading: false,
-              openAddDialog:false
-            });
+                try {
+                  this.readUploadedFile(file).then(
+                    (imageWidth) => {
+                          ImageService.create(document.getElementById('resourceFile').files[0], this.state.maxImageRank+1, document.getElementById('resourceFile').files[0].name,this.state.nameInDocument || document.getElementById('resourceFile').files[0].name, this.props.documentId,null,imageWidth/1000).then(
+                            (response) => {
 
-            window.location.reload();
+                                var images = this.state.images;
+                                images.push(response.data);
 
-          },
-          error => {
-            if(error.response.status===401) this.props.history.push('/login');
-            const resMessage =
-              (error.response &&
-                error.response.data &&
-                error.response.data.message) ||
-              error.message ||
-              error.toString();
+                                this.setState({
+                                  images:images,
+                                  loading: false,
+                                  openAddDialog:false
+                                });
 
-            this.setState({
-              loading: false,
-              errorMessage: resMessage,
-              openAddDialog:false
-            });
-      });
+                                window.location.reload();
+
+                              },
+                              error => {
+                                if(error.response.status===401) this.props.history.push('/login');
+                                const resMessage =
+                                  (error.response &&
+                                    error.response.data &&
+                                    error.response.data.message) ||
+                                  error.message ||
+                                  error.toString();
+
+                                this.setState({
+                                  loading: false,
+                                  errorMessage: resMessage,
+                                  openAddDialog:false
+                                });
+                          });
+                    },
+                    (error)=>{
+
+                    });
+
+                  
+                } catch (e) {
+                  console.warn(e.message)
+                }
+            
+            
+      }
+     
 
 
       if ((type === 'AUDIO' || type === 'VIDEO') && this.state.hasRecording){
