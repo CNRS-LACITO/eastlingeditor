@@ -15,26 +15,60 @@ class SplitForm extends Component {
 
   constructor(props){
     super(props);
+
+    var splittedForms = [];
+    this.props.formToSplit.forEach((f) => {
+      splittedForms.push({
+        kindOf:f.kindOf,
+        text:f.text.split(" ").join(' / ')
+        });
+    });
+    
     this.state = {
       nbSegments:this.props.nbSegments,
       splitChar:" ",
       loading:false,
       verticalImageSplit:false,
-      splittedForm:this.props.formToSplit.split(" ").join(' / ')
+      /*splittedForm:this.props.formToSplit.split(" ").join(' / '),*/
+      splittedForms:splittedForms
     };
 
   }
+
+    static getDerivedStateFromProps(nextProps, prevState) {
+
+        var splittedForms = [];
+        nextProps.formToSplit.forEach((f) => {
+          splittedForms.push({
+            kindOf:f.kindOf,
+            text:f.text.split(" ").join(' / ')
+            });
+        });
+
+          return{
+            splittedForms:splittedForms
+          };
+
+    }
 
   onTextChange = (event) => {
     this.setState({nbSegments:event.target.value});
   }
 
   onSplitCharChange = (event) => {
+    var splittedForms = [];
+    this.props.formToSplit.forEach((f) => {
+      splittedForms.push({
+        kindOf:f.kindOf,
+        text:f.text.split(event.target.value).join(' / ')
+        });
+    });
 
     event.target.value.length < 2 && this.setState({
       splitChar:event.target.value,
-      splittedForm:this.props.formToSplit.split(event.target.value).join(' / '),
-      nbSegments:this.props.formToSplit.split(event.target.value).length
+      //splittedForm:this.props.formToSplit.split(event.target.value).join(' / '),
+      splittedForms: splittedForms,
+      nbSegments:this.props.formToSplit[0].text.split(event.target.value).length
     });
   }
 
@@ -62,7 +96,7 @@ class SplitForm extends Component {
     separators['W']='-';
 
     //const splittedForm = this.props.formToSplit.split(separators[this.props.parentType]);
-    const splittedForm = this.props.formToSplit.split(this.state.splitChar);
+    //const splittedForm = this.props.formToSplit.split(this.state.splitChar);
     var audioStep = 0;
     var imageStep = 0;
     var imageWidth = 0;
@@ -172,33 +206,41 @@ class SplitForm extends Component {
       (response) => {
 
           if(this.props.formToSplit.length > 0){
-            FormService.create(this.props.kindOf,splittedForm[response.data.rank-1] || '',response.data.id).then(
-              (responseFormCreate) => {
-                countCreated++;
-                if(countCreated === k){
+            this.props.formToSplit.forEach((f) => {
+
+              var splittedForm = f.text.split(this.state.splitChar);
+
+              FormService.create(f.kindOf,splittedForm[response.data.rank-1] || '',response.data.id).then(
+                (responseFormCreate) => {
+                  countCreated++;
+                  if(countCreated === (k*this.props.formToSplit.length)){
+                    this.setState({
+                      loading:false
+                    });
+                    this.props.refreshAnnotations(false,this.props.parentId);
+                  }
+                },
+                error => {
                   this.setState({
                     loading:false
                   });
-                  this.props.refreshAnnotations(false,this.props.parentId);
+
+                  if(error.response.status===401) this.props.history.push('/login');
+
+                  const resMessage =
+                    (error.response &&
+                      error.response.data &&
+                      error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+
+                  alert(resMessage);
                 }
-              },
-              error => {
-                this.setState({
-                  loading:false
-                });
+              );
 
-                if(error.response.status===401) this.props.history.push('/login');
+            });
 
-                const resMessage =
-                  (error.response &&
-                    error.response.data &&
-                    error.response.data.message) ||
-                  error.message ||
-                  error.toString();
-
-                alert(resMessage);
-              }
-            );
+            
           }else{//case if no transcription
             countCreated++;
             if(countCreated === k){
@@ -235,7 +277,6 @@ class SplitForm extends Component {
 
 
   render() {
-    console.log("SplitForm rendered");
     
     var visibility = (this.props.hidden)?"none":"";
 
@@ -266,9 +307,12 @@ class SplitForm extends Component {
                   </IconButton>
                 }
 
-                <p>
-                  <small>{this.state.splittedForm}</small>
-                </p>
+                {this.state.splittedForms && this.state.splittedForms.length > 0 && this.state.splittedForms.map((form) => (
+                     <p>
+                      <small>{form.kindOf}: {form.text}</small>
+                    </p>
+                  ))}
+               
       </Container>
 
     );

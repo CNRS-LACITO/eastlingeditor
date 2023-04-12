@@ -86,16 +86,16 @@ export default class Image extends Component {
       var cssBGPosition = '-' + splitCoords[0] + 'px -' + splitCoords[1] + 'px';  
 
       const imgStyle = {
-        'background-position': cssBGPosition,
+        backgroundPosition: cssBGPosition,
         'width': width + 'px',
         'height': height + 'px',
         'padding': '0px',
         'border': '0px',
-        'object-fit': 'none',
-        'object-position':cssBGPosition,
-        'max-width' : 'inherit !important',
-        'transform': 'scale('+ratio+')',
-        'transform-origin': 'left top',
+        objectFit: 'none',
+        objectPosition:cssBGPosition,
+        maxWidth : 'inherit !important',
+        transform: 'scale('+ratio+')',
+        transformOrigin: 'left top',
       };
 
       (window.imagesMap.filter((image)=>image.id === i.image_id).length > 0) && imageElements.push(

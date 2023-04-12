@@ -421,17 +421,18 @@ export default class DocumentAnnotation extends React.Component {
                     onClick={this.openSplitForm}
                   />
                   <SplitForm 
-                  parentId={this.state.data.id}
-                  parentType={this.state.data.type}
-                  refreshAnnotations={this.props.refreshAnnotations} 
-                  hidden={!this.state.openSplit}
-                  nbSegments={(this.state.data.forms.length>0)?this.state.data.forms[0].text.split(' ').length:2}
-                  audioStart={this.state.data.audioStart}
-                  audioEnd={this.state.data.audioEnd}
-                  imageCoords={this.state.data.imageCoords}
-                  formToSplit = {(this.state.data.forms.length>0)?this.state.data.forms[0].text:""}
-                  kindOf = {(this.state.data.forms.length>0)?this.state.data.forms[0].kindOf:""}
-                  documentId = {this.state.data["document_id"]}
+                    parentId={this.state.data.id}
+                    parentType={this.state.data.type}
+                    refreshAnnotations={this.props.refreshAnnotations} 
+                    hidden={!this.state.openSplit}
+                    nbSegments={(this.state.data.forms.length>0)?this.state.data.forms[0].text.split(' ').length:2}
+                    audioStart={this.state.data.audioStart}
+                    audioEnd={this.state.data.audioEnd}
+                    imageCoords={this.state.data.imageCoords}
+                    /*formToSplit = {(this.state.data.forms.length>0)?this.state.data.forms[0].text:""}*/
+                    formToSplit = {(this.state.data.forms.length>0)?this.state.data.forms:[]}
+                    kindOf = {(this.state.data.forms.length>0)?this.state.data.forms[0].kindOf:""}
+                    documentId = {this.state.data["document_id"]}
                   />
               </Container>
               }
