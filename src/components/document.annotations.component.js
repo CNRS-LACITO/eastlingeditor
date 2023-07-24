@@ -790,19 +790,22 @@ class DocumentAnnotations extends React.Component {
 
             }
 
-            if(window.hasScrolled || (window.annotationPanelPosition.x === 0 && window.annotationPanelPosition.y === 0)){
+            //#49 position de la fenêtre si audio seulement
+            if(this.props.images.length > 0){
+              if(window.hasScrolled || (window.annotationPanelPosition.x === 0 && window.annotationPanelPosition.y === 0)){
 
-              window.annotationPanelPosition.x = (document.getElementById('root').offsetWidth/3);
-              //window.annotationPanelPosition.y = (document.getElementById('root').offsetHeight-document.getElementById('audioBlock').offsetTop) * (-1);
-              window.annotationPanelPosition.y = (document.querySelector('.react-draggable').offsetTop - window.scrollY) * (-1);
-              
-              this.setState({
-                annotationPanelPositionX:window.annotationPanelPosition.x,
-                annotationPanelPositionY:window.annotationPanelPosition.y,
-              });
+                window.annotationPanelPosition.x = (document.getElementById('root').offsetWidth/3);
+                window.annotationPanelPosition.y = (document.querySelector('.react-draggable').offsetTop - window.scrollY) * (-1);
+                
+                this.setState({
+                  annotationPanelPositionX:window.annotationPanelPosition.x,
+                  annotationPanelPositionY:window.annotationPanelPosition.y,
+                });
 
-              window.hasScrolled = false;
+                window.hasScrolled = false;
+              }
             }
+            
             
 
           },
@@ -1430,6 +1433,7 @@ class DocumentAnnotations extends React.Component {
 
 
           <Draggable
+            disabled={(this.props.images.length===0)}
             onStop={(e: Event, data: DraggableData) => {window.annotationPanelPosition=data;this.setState({annotationPanelPositionX:data.x,annotationPanelPositionY:data.y})}}
             position={{x:this.state.annotationPanelPositionX,y:this.state.annotationPanelPositionY}}
           >
