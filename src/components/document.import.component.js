@@ -123,7 +123,24 @@ class DocumentImport extends Component {
                       setInterval(increaseProgress,1000, percentUnit);
                   ////////////////////////////////////////////////////
 
-                      DocumentService.create(oaiPrimaryData.subject[0].code + " / " + oaiPrimaryData.subject[0].name,oaiSecondaryData.type,oaiPrimary,oaiSecondary).then(
+                      //#47
+                      var annotations_filename = "";
+                      var annotations_fileUrl = "";
+                      if(oaiSecondaryData.urlFile.length > 0){
+                        annotations_fileUrl = oaiSecondaryData.urlFile;
+                      }else{
+                        if(oaiSecondaryData.urlFile.length > 0){
+                          annotations_fileUrl = oaiPrimaryData.audio;
+                        }else{
+                          annotations_fileUrl = oaiPrimaryData.video;
+                        }
+                      }
+
+                      if(annotations_fileUrl.indexOf('/') > 0)
+                        annotations_filename=annotations_fileUrl.split('/').reverse()[0];
+                      //
+
+                      DocumentService.create(oaiPrimaryData.subject[0].code + " / " + oaiPrimaryData.subject[0].name,oaiSecondaryData.type,oaiPrimary,oaiSecondary,null,null,null,null,annotations_filename).then(
                         responseDocumentCreate => {
 
                           this.setState(state => ({

@@ -35,7 +35,7 @@ class DocumentService {
 
 /////////////////////////////////////////////////
 
-  	create(lang, type, oaiPrimary = null, oaiSecondary = null, recordingDate = null, recordingPlace = null, availableKindOf = null, availableLang = null) {
+  	create(lang, type, oaiPrimary = null, oaiSecondary = null, recordingDate = null, recordingPlace = null, availableKindOf = null, availableLang = null, annotations_filename = null) {
   		let formData = new FormData();
 	    formData.append("lang", lang);
 	    formData.append("type", type);
@@ -46,6 +46,7 @@ class DocumentService {
 	    formData.append("recording_date", recordingDate);
 	    formData.append("available_kindOf", availableKindOf);
 	    formData.append("available_lang", availableLang);
+		formData.append("annotations_filename", annotations_filename);
 
 	    authHeader['Content-Type'] = 'application/x-www-form-urlencoded';
 
