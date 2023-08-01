@@ -71,7 +71,7 @@ export default class DocumentExport extends Component {
 
           var downloadLink = document.createElement("a");
           downloadLink.href = uri;
-          downloadLink.download = this.props.documentExportTitle+".xml";
+          downloadLink.download = this.props.documentExportTitle;
 
           document.body.appendChild(downloadLink);
           downloadLink.click();

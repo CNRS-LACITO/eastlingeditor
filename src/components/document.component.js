@@ -326,7 +326,7 @@ class Document extends Component {
               documentId={this.state.currentDocument.id}
               annotations={this.state.currentDocument.annotations}
               recording={this.state.currentDocument.recording}
-              documentExportTitle={'eastling-'+this.state.currentDocument.lang+'_'+this.state.currentDocument.type+'-'+this.state.currentDocument.id}
+              documentExportTitle={this.state.currentDocument.annotations_filename}
              />
           </TabPanel>
       </Container>
