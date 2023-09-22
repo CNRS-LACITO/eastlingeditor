@@ -86,12 +86,19 @@ class DocumentService {
 	      .then(response => response);
 	  }
 
-  	getAnnotationsXML(docId) {
+  	getAnnotationsXML(docId,annotations_filename) {
   		var headers = authHeader();
   		headers['Content-Type'] = 'xml';
 
-	    return axios.get(API_URL + 'documents/' + docId + '/annotationsxml', { headers: headers })
+  		let formData = new FormData();
+	    formData.append("docId", docId);
+	    formData.append("annotations_filename", annotations_filename);
+
+	    /*return axios.post(API_URL + 'documents/' + docId + '/annotationsxml',formData, { headers: headers })
+	      .then(response => response);*/
+	    return axios.post(API_URL + 'documents/annotationsxml',formData, { headers: headers })
 	      .then(response => response);
+
 	  }
 
 	getAnnotationsJSON4LATEX(docId) {
