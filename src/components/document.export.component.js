@@ -21,14 +21,16 @@ export default class DocumentExport extends Component {
     var that=this;
     const zip = new JSZip();
     
-    var exportFilename = (this.props.documentExportTitle !== null)?this.props.documentExportTitle.replace("/","").replace(" ",""):window.prompt("Name of the document for export","");
+    var exportFilename = (this.props.documentExportTitle !== null)?this.props.documentExportTitle.replace("/","").replace(" ",""):window.prompt("Name of the document for export (please keep the XML extension)",".xml");
+
+    if(exportFilename.indexOf('.xml')===-1) exportFilename+='.xml';
 
     if(exportFilename!==null){
 
       DocumentService.getAnnotationsXML(this.props.documentId,exportFilename).then(
         response => {
 
-            zip.file(exportFilename+".xml", response.data);
+            zip.file(exportFilename, response.data);
             
             if(this.props.recording) 
               zip.file(this.props.recording.filename.split('/').reverse()[0], this.props.recording['TO_BASE64(content)'],{base64: true});
@@ -70,7 +72,8 @@ export default class DocumentExport extends Component {
       loading:true
     });
 
-    var exportFilename = (this.props.documentExportTitle !== null)?this.props.documentExportTitle.replace("/","").replace(" ",""):window.prompt("Name of the document for export","");
+    var exportFilename = (this.props.documentExportTitle !== null)?this.props.documentExportTitle.replace("/","").replace(" ",""):window.prompt("Name of the document for export (please keep the XML extension)",".xml");
+    if(exportFilename.indexOf('.xml')===-1) exportFilename+='.xml';
 
     if(exportFilename!==null){
       DocumentService.getAnnotationsXML(this.props.documentId,exportFilename).then(
