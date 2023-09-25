@@ -18,12 +18,18 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import IconButton from '@material-ui/core/IconButton';
+import Input from '@material-ui/core/Input';
+import OutlinedInput from '@material-ui/core/OutlinedInput';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="https://eastling.fr">
+      <Link color="inherit" href="https://eastling.huma-num.fr">
         Matthew DEO / LACITO (C.N.R.S)
       </Link>{' '}
       {new Date().getFullYear()}
@@ -52,6 +58,11 @@ const styles = (theme) => ({
   },
 });
 
+
+const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
 const required = value => {
   if (!value) {
     return (
@@ -69,12 +80,15 @@ class Login extends Component {
     this.handleLogin = this.handleLogin.bind(this);
     this.onChangeUsername = this.onChangeUsername.bind(this);
     this.onChangePassword = this.onChangePassword.bind(this);
+    this.handleClickShowPassword = this.handleClickShowPassword.bind(this);
+
 
     this.state = {
       username: "",
       password: "",
       loading: false,
-      message: ""
+      message: "",
+      showPassword: false
     };
   }
 
@@ -89,6 +103,12 @@ class Login extends Component {
       password: e.target.value
     });
   }
+
+  handleClickShowPassword(e){
+    this.setState({
+      showPassword: !(this.state.showPassword)
+    });
+  };
 
   handleLogin(e) {
     e.preventDefault();
@@ -165,20 +185,32 @@ class Login extends Component {
                 onChange={this.onChangeUsername}
                 validations={[required]}
 	          />
-	          <TextField
+	          <OutlinedInput
 	            variant="outlined"
 	            margin="normal"
 	            required
 	            fullWidth
 	            name="password"
 	            label="Password"
-	            type="password"
+	            type={this.state.showPassword ? 'text' : 'password'}
 	            id="password"
 	            autoComplete="current-password"
                 className="form-control"
                 value={this.state.password}
                 onChange={this.onChangePassword}
                 validations={[required]}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={this.handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    edge="end"
+                  >
+                    {this.state.showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              }
 	          />
 	          
 
