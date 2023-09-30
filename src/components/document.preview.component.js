@@ -51,7 +51,7 @@ export default class DocumentPreview extends Component {
     annotationsPlayer.TEXT.FORM = annotationsEditor.forms;
 
     annotationsEditor.forms.forEach((f)=>{
-      (typeOf.text.forms && !typeOf.text.forms.includes(f.kindOf)) && typeOf.text.forms.push(f.kindOf);
+      (typeOf.text.transcriptions && !typeOf.text.transcriptions.includes(f.kindOf)) && typeOf.text.transcriptions.push(f.kindOf);
     });
 
     annotationsPlayer.TEXT.TRANSL = [];
@@ -475,7 +475,11 @@ export default class DocumentPreview extends Component {
               </Box>
               {this.props.recording && <Player file={{"type":"audio","url":'',"content":this.props.recording['TO_BASE64(content)']}} playerIsLoaded = {this.playerIsLoaded.bind(this)} />
 }
-              <DisplayOptions displayOptions={this.props.displayOptions} options={typeOf} isWordList={this.state.isWordList} />
+              <DisplayOptions 
+                displayOptions={this.props.displayOptions}
+                options={typeOf}
+                isWordList={this.state.isWordList}
+              />
               {
               this.props.recording && this.state.playerLoaded && 
               <Annotations 

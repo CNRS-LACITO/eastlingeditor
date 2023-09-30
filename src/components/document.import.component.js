@@ -255,9 +255,8 @@ class DocumentImport extends Component {
 
                             }
                           //
-
-                            
-                          
+                      
+                      
                           //1. on crée les ressources liées au document
                           //1.1 Enregistrement
                           this.setState({
