@@ -53,13 +53,14 @@ class Contributor extends Component {
   render() {
 
     return(
+      
         <Chip
-          avatar={<Avatar>{this.props.contributor.type.charAt(0).toUpperCase()}</Avatar>}
-          label={this.props.contributor.firstName + " " + this.props.contributor.lastName} 
+          label={this.props.contributor.type + " : " + this.props.contributor.firstName + " " + this.props.contributor.lastName} 
           onDelete={this.handleDelete}
           color="primary"
           variant="outlined"
         />
+
     );
   }
 }
